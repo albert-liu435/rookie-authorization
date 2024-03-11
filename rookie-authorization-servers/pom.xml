@@ -9,10 +9,17 @@
     </parent>
 
     <groupId>com.rookie.bigdata</groupId>
-    <artifactId>rookie-authorization-server</artifactId>
+    <artifactId>rookie-authorization-servers</artifactId>
     <version>0.0.1</version>
-    <name>rookie-authorization-server</name>
-    <description>rookie-authorization-server</description>
+
+    <packaging>pom</packaging>
+    <name>rookie-authorization-servers</name>
+    <description>rookie-authorization-servers</description>
+
+
+    <modules>
+        <module>rookie-authorization-server</module>
+    </modules>
 
     <properties>
         <java.version>17</java.version>
