@@ -1,11 +1,5 @@
 package com.rookie.bigdata.config;
 
-/**
- * @Author rookie
- * @Description
- * @Date 2024/3/11 21:03
- * @Version 1.0
- */
 
 
 import com.nimbusds.jose.jwk.JWKSet;
@@ -53,6 +47,15 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
 
+
+/**
+ * @Author rookie
+ * @Description
+ * @Date 2024/3/11 21:03
+ * @Version 1.0
+ */
+
+
 /**
  * 认证配置
  * {@link EnableMethodSecurity} 开启全局方法认证，启用JSR250注解支持，启用注解 {@link Secured} 支持，
@@ -61,11 +64,10 @@ import java.util.UUID;
  * {@link EnableWebSecurity} 注解有两个作用:
  * 1. 加载了WebSecurityConfiguration配置类, 配置安全认证策略。
  * 2. 加载了AuthenticationConfiguration, 配置了认证信息。
- *
- * @author vains
  */
 @Configuration
-@EnableWebSecurity
+//@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 public class AuthorizationConfig {
 
@@ -103,6 +105,8 @@ public class AuthorizationConfig {
     }
 
     /**
+     * 配置身份验证过滤器链
+     *
      * 配置认证相关的过滤器链
      *
      * @param http spring security核心配置类
@@ -111,6 +115,9 @@ public class AuthorizationConfig {
      */
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+
+
+
         http.authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
                         .requestMatchers("/assets/**", "/webjars/**", "/login").permitAll()
@@ -146,6 +153,7 @@ public class AuthorizationConfig {
      */
     @Bean
     public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
+
         RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
                 // 客户端id
                 .clientId("messaging-client")
@@ -197,7 +205,91 @@ public class AuthorizationConfig {
         return registeredClientRepository;
     }
 
+
+//    /**
+//     * 配置客户端Repository
+//     *
+//     * @param jdbcTemplate    db 数据源信息
+//     * @param passwordEncoder 密码解析器
+//     * @return 基于数据库的repository
+//     */
+//    @Bean
+//    public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
+//        RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+//                // 客户端id
+//                .clientId("messaging-client")
+//                // 客户端秘钥，使用密码解析器加密
+//                .clientSecret(passwordEncoder.encode("123456"))
+//                // 客户端认证方式，基于请求头的认证
+//                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+//                // 配置资源服务器使用该客户端获取授权时支持的方式
+//                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+//                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+//                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+//                // 授权码模式回调地址，oauth2.1已改为精准匹配，不能只设置域名，并且屏蔽了localhost，本机使用127.0.0.1访问
+//                .redirectUri("http://127.0.0.1:8080/login/oauth2/code/messaging-client-oidc")
+//                .redirectUri("https://www.baidu.com")
+//                // 该客户端的授权范围，OPENID与PROFILE是IdToken的scope，获取授权时请求OPENID的scope时认证服务会返回IdToken
+//                .scope(OidcScopes.OPENID)
+//                .scope(OidcScopes.PROFILE)
+//                // 自定scope
+//                .scope("message.read")
+//                .scope("message.write")
+//                // 客户端设置，设置用户需要确认授权
+//                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+//                .build();
+//
+//        // 基于db存储客户端，还有一个基于内存的实现 InMemoryRegisteredClientRepository
+//        JdbcRegisteredClientRepository registeredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
+//
+//        // 初始化客户端
+//        RegisteredClient repositoryByClientId = registeredClientRepository.findByClientId(registeredClient.getClientId());
+//        if (repositoryByClientId == null) {
+//            registeredClientRepository.save(registeredClient);
+//        }
+//        // 设备码授权客户端
+//        RegisteredClient deviceClient = RegisteredClient.withId(UUID.randomUUID().toString())
+//                .clientId("device-message-client")
+//                // 公共客户端
+//                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
+//                // 设备码授权
+//                .authorizationGrantType(AuthorizationGrantType.DEVICE_CODE)
+//                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+//                // 自定scope
+//                .scope("message.read")
+//                .scope("message.write")
+//                .build();
+//        RegisteredClient byClientId = registeredClientRepository.findByClientId(deviceClient.getClientId());
+//        if (byClientId == null) {
+//            registeredClientRepository.save(deviceClient);
+//        }
+//
+//        // PKCE客户端
+//        RegisteredClient pkceClient = RegisteredClient.withId(UUID.randomUUID().toString())
+//                .clientId("pkce-message-client")
+//                // 公共客户端
+//                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
+//                // 设备码授权
+//                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+//                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+//                // 授权码模式回调地址，oauth2.1已改为精准匹配，不能只设置域名，并且屏蔽了localhost，本机使用127.0.0.1访问
+//                .redirectUri("http://127.0.0.1:8080/login/oauth2/code/messaging-client-oidc")
+//                .clientSettings(ClientSettings.builder().requireProofKey(Boolean.TRUE).build())
+//                // 自定scope
+//                .scope("message.read")
+//                .scope("message.write")
+//                .build();
+//        RegisteredClient findPkceClient = registeredClientRepository.findByClientId(pkceClient.getClientId());
+//        if (findPkceClient == null) {
+//            registeredClientRepository.save(pkceClient);
+//        }
+//        return registeredClientRepository;
+//    }
+
+
     /**
+     * 配置授权管理服务
+     *
      * 配置基于db的oauth2的授权管理服务
      *
      * @param jdbcTemplate               db数据源信息
@@ -211,6 +303,8 @@ public class AuthorizationConfig {
     }
 
     /**
+     * 配置授权确认管理服务
+     *
      * 配置基于db的授权确认管理服务
      *
      * @param jdbcTemplate               db数据源信息

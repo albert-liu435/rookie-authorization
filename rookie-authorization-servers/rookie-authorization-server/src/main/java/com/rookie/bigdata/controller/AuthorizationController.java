@@ -9,6 +9,8 @@ package com.rookie.bigdata.controller;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent;
@@ -36,6 +38,9 @@ import java.util.Set;
 @Controller
 @RequiredArgsConstructor
 public class AuthorizationController {
+
+    protected final Logger logger = LoggerFactory.getLogger(AuthorizationController.class);
+
 
     private final RegisteredClientRepository registeredClientRepository;
 
