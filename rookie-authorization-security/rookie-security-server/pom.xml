@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.rookie.bigdata</groupId>
         <artifactId>rookie-authorization-security</artifactId>
-        <version>0.0.1</version>
+        <version>1.0.1</version>
     </parent>
 
     <groupId>com.rookie.bigdata</groupId>
     <artifactId>rookie-security-server</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.1</version>
     <name>rookie-security-server</name>
     <description>rookie-security-server</description>
 
