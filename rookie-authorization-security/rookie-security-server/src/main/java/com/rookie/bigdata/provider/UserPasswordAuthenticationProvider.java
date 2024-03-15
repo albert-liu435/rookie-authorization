@@ -26,7 +26,6 @@ public class UserPasswordAuthenticationProvider implements AuthenticationProvide
     private PasswordEncoder bCryptPasswordEncoder;
 
 
-
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         // 获取用户输入的用户名和密码
@@ -46,9 +45,15 @@ public class UserPasswordAuthenticationProvider implements AuthenticationProvide
         };
     }
 
+//    @Override
+//    public boolean supports(Class<?> aClass) {
+//        return true;
+//    }
+
     @Override
-    public boolean supports(Class<?> aClass) {
-        return true;
+    public boolean supports(Class<?> authentication) {
+
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
 
 }

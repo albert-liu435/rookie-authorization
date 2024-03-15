@@ -17,13 +17,6 @@ public class RookieSecurityApplication {
     public static void main(String[] args) {
         SpringApplication.run(RookieSecurityApplication.class, args);
 
-        new Predicate<String>(){
-
-            @Override
-            public boolean test(String s) {
-                return false;
-            }
-        }
     }
 
 }

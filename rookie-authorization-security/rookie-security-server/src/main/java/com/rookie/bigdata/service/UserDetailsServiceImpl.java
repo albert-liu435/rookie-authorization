@@ -1,5 +1,6 @@
 package com.rookie.bigdata.service;
 
+import com.rookie.bigdata.domain.CustomUserDetails;
 import com.rookie.bigdata.domain.Role;
 import com.rookie.bigdata.domain.User;
 import com.rookie.bigdata.mapper.UserMapper;
@@ -49,11 +50,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         // 根据用户ID，查询用户的角色
         List<Role> roles = userMapper.findRoleByUserId(myUser.getId());
         // 添加角色
-        List<GrantedAuthority> authorities = new ArrayList<>();
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         for (Role role : roles) {
             authorities.add(new SimpleGrantedAuthority(role.getName()));
         }
         // 构建 Security 的 User 对象
-        return new org.springframework.security.core.userdetails.User(myUser.getName(), myUser.getPassword(), authorities);
+        return new CustomUserDetails(myUser, authorities);
     }
 }
