@@ -22,7 +22,7 @@ public class HelloController {
 
     public static final Logger logger = LoggerFactory.getLogger(HelloController.class);
 
-    @GetMapping("/hello")
+    @RequestMapping("/hello")
     public String hello() {
 
         logger.debug("authentication: {}", SecurityContextHolder.getContext().getAuthentication());

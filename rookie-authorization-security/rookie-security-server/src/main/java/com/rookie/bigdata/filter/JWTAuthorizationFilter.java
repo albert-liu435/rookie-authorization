@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 /**
  * @Classname JWTAuthorizationFilter
- * @Description TODO
+ * @Description
  * @Author rookie
  * @Date 2023/3/10 11:29
  * @Version 1.0
@@ -41,7 +41,6 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             if (WHITE_LIST.contains(request.getRequestURI())) {
                 chain.doFilter(request, response);
             } else {
-                //response.getWriter().write("未经授权的访问!");
                 response.getWriter().write("not permited!");
             }
             return;
@@ -50,17 +49,17 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         // Branch B: 如果请求头中有 Bear xxx, 设置认证信息
         final String jsonWebToken = authorization.replace(JWTUtils.TOKEN_PREFIX, "");
 
-        // TODO 用 Redis 的过期控制 token, 而不用 jwt 的 Expiration
+        //  用 Redis 的过期控制 token, 而不用 jwt 的 Expiration
         // if (JWTUtils.hasExpired(jsonWebToken)) {
         //     response.getWriter().write("access-token 已过期, 请重新登陆!");
         // }
-        // TODO 每一次携带正确 token 的访问, 都刷新 Redis 的过期时间
+        //  每一次携带正确 token 的访问, 都刷新 Redis 的过期时间
 
         CustomUserDetails customUserDetails = JWTUtils.userDetails(jsonWebToken);
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
                         customUserDetails.getName(),
-                        // TODO Json Web Token 中不能携带用户密码
+                        //  Json Web Token 中不能携带用户密码
                         customUserDetails.getPassword(),
                         customUserDetails.getAuthorities()
                 )

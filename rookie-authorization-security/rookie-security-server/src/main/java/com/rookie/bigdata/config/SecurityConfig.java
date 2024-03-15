@@ -1,5 +1,8 @@
 package com.rookie.bigdata.config;
 
+import com.rookie.bigdata.csrf.MyCsrfTokenRequestHandler;
+import com.rookie.bigdata.filter.CsrfHeaderFilter;
+import com.rookie.bigdata.filter.HttpServletRequestWrapFilter;
 import com.rookie.bigdata.filter.JWTAuthenticationFilter;
 import com.rookie.bigdata.filter.JWTAuthorizationFilter;
 import com.rookie.bigdata.provider.UserPasswordAuthenticationProvider;
@@ -20,8 +23,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.*;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -34,6 +41,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
  */
 
 @Configuration
+@EnableWebSecurity(debug = true)
 public class SecurityConfig {
 
     @Autowired
@@ -45,6 +53,11 @@ public class SecurityConfig {
     @Autowired
     private UserPasswordAuthenticationProvider userPasswordAuthenticationProvider;
 
+    @Autowired
+    private CsrfTokenRepository csrfTokenMemoryRepository;
+
+    @Autowired
+    private CsrfHeaderFilter csrfHeaderFilter;
 
     /**
      * @param http
@@ -54,19 +67,39 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
 
-        http.csrf((csrf) -> csrf.disable())
-//        http.csrf().disable()
-                .authorizeRequests()
-                .requestMatchers("/auth/**").permitAll()
-//                .antMatchers("/auth/**").permitAll()
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        // set the name of the attribute the CsrfToken will be populated on
+        requestHandler.setCsrfRequestAttributeName("_csrf");
 
-                .anyRequest().hasAnyAuthority("ROLE_ADMIN")
-                .and()
-                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
-                // 让校验 Token 的过滤器在身份认证过滤器之后
+//        MyCsrfTokenRequestHandler requestHandler = new MyCsrfTokenRequestHandler();
+//        // set the name of the attribute the CsrfToken will be populated on
+////        requestHandler.setCsrfRequestAttributeName("_csrf");
+
+
+        http.csrf((csrf) -> {
+                    csrf.ignoringRequestMatchers(new AntPathRequestMatcher("/login"))
+                            .csrfTokenRepository(csrfTokenMemoryRepository)
+                            .csrfTokenRequestHandler(requestHandler)
+                    ;
+                })
+//                .addFilterAfter(new CsrfHeaderFilter(), JWTAuthorizationFilter.class)
+
+
+                .authorizeHttpRequests((authorize) -> authorize
+                                // 放行静态资源
+                                .requestMatchers("/auth/**").permitAll()
+//                        .anyRequest().authenticated()
+                                .anyRequest().hasAnyAuthority("ROLE_ADMIN")
+                )
+
+                .formLogin((formLogin) -> formLogin.disable())
+                //请求包装类过滤器在CsrfFilter之前，为了解决参数多次获取的问题
+                .addFilterBefore(new HttpServletRequestWrapFilter(), CsrfFilter.class)
+                //
+                .addFilterAt(new JWTAuthenticationFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(new JWTAuthorizationFilter(), JWTAuthenticationFilter.class)
+                .addFilterAfter(csrfHeaderFilter, CsrfFilter.class)
                 // 不需要 Session
-//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 .sessionManagement((sessionManagement) ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );
