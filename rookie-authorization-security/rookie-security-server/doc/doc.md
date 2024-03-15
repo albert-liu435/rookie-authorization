@@ -21,3 +21,15 @@ doc
 ![893b8dfce8a318a50f9470b5571a334](pic/doc/893b8dfce8a318a50f9470b5571a334.png)
 
 ![b4b037f91374fdf3eaf71db2f32d809](pic/doc/b4b037f91374fdf3eaf71db2f32d809.png)
+
+## rookie-security.v.1.0.4
+
+![2e1adcdf844a15af73b69a006d6098c](pic/doc/2e1adcdf844a15af73b69a006d6098c.png)
+
+请求http://localhost:18900/quickstart/user/1
+
+
+
+![0e5042e56f94736f4636d4c98b98e35](pic/doc/0e5042e56f94736f4636d4c98b98e35-1678784923099.png)
+
+请求http://localhost:18900/quickstart/admin/info，在请求的时候需要在header加上token和csrf-token

@@ -13,10 +13,10 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * @Class CustomUserDetails
+ * @Classname CustomUserDetails
  * @Description 参考 org.springframework.security.core.userdetails.User
  * @Author rookie
- * @Date 2024/3/15 11:02
+ * @Date 2023/3/10 11:00
  * @Version 1.0
  */
 @Data
@@ -119,6 +119,5 @@ public class CustomUserDetails implements UserDetails {
         }
 
     }
-
 
 }

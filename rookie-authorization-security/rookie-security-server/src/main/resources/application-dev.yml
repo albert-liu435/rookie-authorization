@@ -1,15 +1,27 @@
-
-
 spring:
+  application:
+    name: quickstart
+  main:
+
+    allow-bean-definition-overriding: true
+    allow-circular-references: true
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/leaf?serverTimezone=UTC&userUnicode=true&characterEncoding=utf-8
-    username: root
+    url: jdbc:mysql://127.0.0.1/leaf?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     password: root
+    username: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+#  redis:
+#    host: 127.0.0.1
+#    port: 6379
+#    # password: SCLiKe11040218
+#    database: 0
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      # password: SCLiKe11040218
+      database: 0
 server:
   servlet:
     context-path: /quickstart
   port: 18900
-
-
-
