@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @Class TestController
- * @Description
+ * @Description 测试接口
  * @Author rookie
  * @Date 2024/3/12 15:34
  * @Version 1.0

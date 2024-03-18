@@ -1,12 +1,5 @@
 package com.rookie.bigdata.controller;
 
-/**
- * @Author rookie
- * @Description
- * @Date 2024/3/11 21:04
- * @Version 1.0
- */
-
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -30,11 +23,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
- * 认证服务器相关自定接口
- *
- * @author vains
+ * @Author rookie
+ * @Description 认证服务器相关自定接口
+ * @Date 2024/3/11 21:04
+ * @Version 1.0
  */
+
+
+
 @Controller
 @RequiredArgsConstructor
 public class AuthorizationController {
@@ -43,23 +41,6 @@ public class AuthorizationController {
 
     private final OAuth2AuthorizationConsentService authorizationConsentService;
 
-    @GetMapping("/activate")
-    public String activate(@RequestParam(value = "user_code", required = false) String userCode) {
-        if (userCode != null) {
-            return "redirect:/oauth2/device_verification?user_code=" + userCode;
-        }
-        return "device-activate";
-    }
-
-    @GetMapping("/activated")
-    public String activated() {
-        return "device-activated";
-    }
-
-    @GetMapping(value = "/", params = "success")
-    public String success() {
-        return "device-activated";
-    }
 
     @GetMapping("/login")
     public String login() {
