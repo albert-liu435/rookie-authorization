@@ -30,9 +30,6 @@ import java.util.Set;
  * @Date 2024/3/11 21:04
  * @Version 1.0
  */
-
-
-
 @Controller
 @RequiredArgsConstructor
 public class AuthorizationController {
@@ -41,6 +38,23 @@ public class AuthorizationController {
 
     private final OAuth2AuthorizationConsentService authorizationConsentService;
 
+    @GetMapping("/activate")
+    public String activate(@RequestParam(value = "user_code", required = false) String userCode) {
+        if (userCode != null) {
+            return "redirect:/oauth2/device_verification?user_code=" + userCode;
+        }
+        return "device-activate";
+    }
+
+    @GetMapping("/activated")
+    public String activated() {
+        return "device-activated";
+    }
+
+    @GetMapping(value = "/", params = "success")
+    public String success() {
+        return "device-activated";
+    }
 
     @GetMapping("/login")
     public String login() {
@@ -108,6 +122,7 @@ public class AuthorizationController {
     public static class ScopeWithDescription {
         private static final String DEFAULT_DESCRIPTION = "UNKNOWN SCOPE - We cannot provide information about this permission, use caution when granting this.";
         private static final Map<String, String> scopeDescriptions = new HashMap<>();
+
         static {
             scopeDescriptions.put(
                     OidcScopes.PROFILE,
