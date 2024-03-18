@@ -9,6 +9,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 
 import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationConverter;
 import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationProvider;
+import com.rookie.bigdata.filter.CaptchaAuthenticationFilter;
 import com.rookie.bigdata.util.SecurityUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,6 +49,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.security.KeyPair;
@@ -151,13 +153,15 @@ public class AuthorizationConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
-                        .requestMatchers("/assets/**", "/webjars/**", "/login").permitAll()
+                        .requestMatchers("/assets/**", "/webjars/**", "/login", "/getCaptcha").permitAll()
                         .anyRequest().authenticated()
                 )
                 // 指定登录页面
                 .formLogin(formLogin ->
                         formLogin.loginPage("/login")
                 );
+        // 在UsernamePasswordAuthenticationFilter拦截器之前添加验证码校验拦截器，并拦截POST的登录接口
+        http.addFilterBefore(new CaptchaAuthenticationFilter("/login"), UsernamePasswordAuthenticationFilter.class);
         // 添加BearerTokenAuthenticationFilter，将认证服务当做一个资源服务，解析请求头中的token
         http.oauth2ResourceServer((resourceServer) -> resourceServer
                 .jwt(Customizer.withDefaults())
@@ -167,6 +171,7 @@ public class AuthorizationConfig {
 
         return http.build();
     }
+
 
     /**
      * 自定义jwt，将权限信息放至jwt中
