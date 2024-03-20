@@ -7,6 +7,9 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 
+import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationConverter;
+import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationProvider;
+import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationToken;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -81,15 +84,38 @@ public class AuthorizationConfig {
      * @throws Exception 抛出
      */
     @Bean
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http,
+                                                                      RegisteredClientRepository registeredClientRepository,
+                                                                      AuthorizationServerSettings authorizationServerSettings) throws Exception {
         // 配置默认的设置，忽略认证端点的csrf校验
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+        // 新建设备码converter和provider
+        DeviceClientAuthenticationConverter deviceClientAuthenticationConverter =
+                new DeviceClientAuthenticationConverter(
+                        authorizationServerSettings.getDeviceAuthorizationEndpoint());
+        DeviceClientAuthenticationProvider deviceClientAuthenticationProvider =
+                new DeviceClientAuthenticationProvider(registeredClientRepository);
+
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 // 开启OpenID Connect 1.0协议相关端点
                 .oidc(Customizer.withDefaults())
                 // 设置自定义用户确认授权页
-                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI));
+                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI))
+                // 设置设备码用户验证url(自定义用户验证页)
+                .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint ->
+                        deviceAuthorizationEndpoint.verificationUri("/activate")
+                )
+                // 设置验证设备码用户确认页面
+                .deviceVerificationEndpoint(deviceVerificationEndpoint ->
+                        deviceVerificationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI)
+                )
+                .clientAuthentication(clientAuthentication ->
+                        // 客户端认证添加设备码的converter和provider
+                        clientAuthentication
+                                .authenticationConverter(deviceClientAuthenticationConverter)
+                                .authenticationProvider(deviceClientAuthenticationProvider)
+                );
         http
                 // 当未登录时访问认证端点时重定向至login页面
                 .exceptionHandling((exceptions) -> exceptions
@@ -147,74 +173,6 @@ public class AuthorizationConfig {
      * @param passwordEncoder 密码解析器
      * @return 基于数据库的repository
      */
-//    @Bean
-//    public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
-//        RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
-//                // 客户端id
-//                .clientId("messaging-client")
-//                // 客户端秘钥，使用密码解析器加密
-//                .clientSecret(passwordEncoder.encode("123456"))
-//                // 客户端认证方式，基于请求头的认证
-//                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-//                // 配置资源服务器使用该客户端获取授权时支持的方式
-//                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-//                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-//                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-//                // 授权码模式回调地址，oauth2.1已改为精准匹配，不能只设置域名，并且屏蔽了localhost，本机使用127.0.0.1访问
-//                .redirectUri("http://127.0.0.1:8080/login/oauth2/code/messaging-client-oidc")
-//                .redirectUri("https://www.baidu.com")
-//                // 该客户端的授权范围，OPENID与PROFILE是IdToken的scope，获取授权时请求OPENID的scope时认证服务会返回IdToken
-//                .scope(OidcScopes.OPENID)
-//                .scope(OidcScopes.PROFILE)
-//                // 自定scope
-//                .scope("message.read")
-//                .scope("message.write")
-//
-//                // 客户端设置，设置用户需要确认授权 requireAuthorizationConsent：当设置为true时登录后会先跳转授权确认页面，确认后才会跳转到redirect_uri，为false时不会跳转至授权确认页面
-//                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
-//                .build();
-//
-//        // 基于db存储客户端，还有一个基于内存的实现 InMemoryRegisteredClientRepository
-//        JdbcRegisteredClientRepository registeredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
-//
-//        // 初始化客户端
-//        RegisteredClient repositoryByClientId = registeredClientRepository.findByClientId(registeredClient.getClientId());
-//        if (repositoryByClientId == null) {
-//            registeredClientRepository.save(registeredClient);
-//        }
-//        // 设备码授权客户端
-//        RegisteredClient deviceClient = RegisteredClient.withId(UUID.randomUUID().toString())
-//                .clientId("device-message-client")
-//                // 公共客户端
-//                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
-//                // 设备码授权
-//                .authorizationGrantType(AuthorizationGrantType.DEVICE_CODE)
-//                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-//                // 自定scope
-//                .scope("message.read")
-//                .scope("message.write")
-//                .build();
-//        RegisteredClient byClientId = registeredClientRepository.findByClientId(deviceClient.getClientId());
-//        if (byClientId == null) {
-//            registeredClientRepository.save(deviceClient);
-//        }
-//        return registeredClientRepository;
-//    }
-
-    /**
-     * 配置客户端Repository
-     *
-     * @param jdbcTemplate    db 数据源信息
-     * @param passwordEncoder 密码解析器
-     * @return 基于数据库的repository
-     */
-    /**
-     * 配置客户端Repository
-     *
-     * @param jdbcTemplate    db 数据源信息
-     * @param passwordEncoder 密码解析器
-     * @return 基于数据库的repository
-     */
     @Bean
     public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate, PasswordEncoder passwordEncoder) {
         RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
@@ -230,7 +188,6 @@ public class AuthorizationConfig {
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 // 授权码模式回调地址，oauth2.1已改为精准匹配，不能只设置域名，并且屏蔽了localhost，本机使用127.0.0.1访问
                 .redirectUri("http://127.0.0.1:8080/login/oauth2/code/messaging-client-oidc")
-//                .redirectUri("http://127.0.0.1:8002/login/oauth2/code/messaging-client-oidc")
                 .redirectUri("https://www.baidu.com")
                 // 该客户端的授权范围，OPENID与PROFILE是IdToken的scope，获取授权时请求OPENID的scope时认证服务会返回IdToken
                 .scope(OidcScopes.OPENID)
@@ -272,13 +229,12 @@ public class AuthorizationConfig {
                 .clientId("pkce-message-client")
                 // 公共客户端
                 .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
-                // 设备码授权
+                // 授权码模式，因为是扩展授权码流程，所以流程还是授权码的流程，改变的只是参数
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 // 授权码模式回调地址，oauth2.1已改为精准匹配，不能只设置域名，并且屏蔽了localhost，本机使用127.0.0.1访问
                 .redirectUri("http://127.0.0.1:8080/login/oauth2/code/messaging-client-oidc")
                 .clientSettings(ClientSettings.builder().requireProofKey(Boolean.TRUE).build())
-//                .tokenSettings()
                 // 自定scope
                 .scope("message.read")
                 .scope("message.write")
@@ -289,9 +245,6 @@ public class AuthorizationConfig {
         }
         return registeredClientRepository;
     }
-
-
-
 
     /**
      * 配置基于db的oauth2的授权管理服务
