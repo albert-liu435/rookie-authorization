@@ -1,18 +1,15 @@
 package com.rookie.bigdata.controller;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -33,6 +30,9 @@ import java.util.Set;
  * @Date 2024/3/11 21:04
  * @Version 1.0
  */
+
+
+
 @Controller
 @RequiredArgsConstructor
 public class AuthorizationController {
@@ -41,30 +41,9 @@ public class AuthorizationController {
 
     private final OAuth2AuthorizationConsentService authorizationConsentService;
 
-    @GetMapping("/activate")
-    public String activate(@RequestParam(value = "user_code", required = false) String userCode) {
-        if (userCode != null) {
-            return "redirect:/oauth2/device_verification?user_code=" + userCode;
-        }
-        return "device-activate";
-    }
-
-    @GetMapping("/activated")
-    public String activated() {
-        return "device-activated";
-    }
-
-    @GetMapping(value = "/", params = "success")
-    public String success() {
-        return "device-activated";
-    }
 
     @GetMapping("/login")
-    public String login(Model model, HttpSession session) {
-        Object attribute = session.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-        if (attribute instanceof AuthenticationException exception) {
-            model.addAttribute("error", exception.getMessage());
-        }
+    public String login() {
         return "login";
     }
 
@@ -129,7 +108,6 @@ public class AuthorizationController {
     public static class ScopeWithDescription {
         private static final String DEFAULT_DESCRIPTION = "UNKNOWN SCOPE - We cannot provide information about this permission, use caution when granting this.";
         private static final Map<String, String> scopeDescriptions = new HashMap<>();
-
         static {
             scopeDescriptions.put(
                     OidcScopes.PROFILE,
