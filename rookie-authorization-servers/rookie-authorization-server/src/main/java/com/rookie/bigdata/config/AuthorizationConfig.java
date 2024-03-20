@@ -277,6 +277,7 @@ public class AuthorizationConfig {
                 // 授权码模式回调地址，oauth2.1已改为精准匹配，不能只设置域名，并且屏蔽了localhost，本机使用127.0.0.1访问
                 .redirectUri("http://127.0.0.1:8080/login/oauth2/code/messaging-client-oidc")
                 .clientSettings(ClientSettings.builder().requireProofKey(Boolean.TRUE).build())
+//                .tokenSettings()
                 // 自定scope
                 .scope("message.read")
                 .scope("message.write")
