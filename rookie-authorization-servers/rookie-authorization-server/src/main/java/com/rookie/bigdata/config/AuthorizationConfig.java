@@ -10,6 +10,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationConverter;
 import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationProvider;
 import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationToken;
+import com.rookie.bigdata.constant.SecurityConstants;
 import com.rookie.bigdata.filter.CaptchaAuthenticationFilter;
 import com.rookie.bigdata.util.SecurityUtils;
 import org.springframework.context.annotation.Bean;
@@ -160,8 +161,6 @@ public class AuthorizationConfig {
                 .formLogin(formLogin ->
                         formLogin.loginPage("/login")
                 );
-        // 在UsernamePasswordAuthenticationFilter拦截器之前添加验证码校验拦截器，并拦截POST的登录接口
-        http.addFilterBefore(new CaptchaAuthenticationFilter("/login"), UsernamePasswordAuthenticationFilter.class);
         // 添加BearerTokenAuthenticationFilter，将认证服务当做一个资源服务，解析请求头中的token
         http.oauth2ResourceServer((resourceServer) -> resourceServer
                 .jwt(Customizer.withDefaults())
@@ -179,64 +178,34 @@ public class AuthorizationConfig {
      */
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> oAuth2TokenCustomizer() {
+        return context -> {
+            // 检查登录用户信息是不是UserDetails，排除掉没有用户参与的流程
+            if (context.getPrincipal().getPrincipal() instanceof UserDetails user) {
+                // 获取申请的scopes
+                Set<String> scopes = context.getAuthorizedScopes();
+                // 获取用户的权限
+                Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+                // 提取权限并转为字符串
+                Set<String> authoritySet = Optional.ofNullable(authorities).orElse(Collections.emptyList()).stream()
+                        // 获取权限字符串
+                        .map(GrantedAuthority::getAuthority)
+                        // 去重
+                        .collect(Collectors.toSet());
 
-        return new OAuth2TokenCustomizer<JwtEncodingContext>() {
-            @Override
-            public void customize(JwtEncodingContext context) {
-                // 检查登录用户信息是不是UserDetails，排除掉没有用户参与的流程
-                if (context.getPrincipal().getPrincipal() instanceof UserDetails user) {
-                    // 获取申请的scopes
-                    Set<String> scopes = context.getAuthorizedScopes();
-                    // 获取用户的权限
-                    Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
-                    // 提取权限并转为字符串
-                    Set<String> authoritySet = Optional.ofNullable(authorities).orElse(Collections.emptyList()).stream()
-                            // 获取权限字符串
-                            .map(GrantedAuthority::getAuthority)
-                            // 去重
-                            .collect(Collectors.toSet());
+                // 合并scope与用户信息
+                authoritySet.addAll(scopes);
 
-                    // 合并scope与用户信息
-                    authoritySet.addAll(scopes);
-
-                    JwtClaimsSet.Builder claims = context.getClaims();
-                    // 将权限信息放入jwt的claims中（也可以生成一个以指定字符分割的字符串放入）
-                    claims.claim("authorities", authoritySet);
-                    // 放入其它自定内容
-                    // 角色、头像...
-                }
+                JwtClaimsSet.Builder claims = context.getClaims();
+                // 将权限信息放入jwt的claims中（也可以生成一个以指定字符分割的字符串放入）
+                claims.claim(SecurityConstants.AUTHORITIES_KEY, authoritySet);
+                // 放入其它自定内容
+                // 角色、头像...
             }
         };
-
-//        return context -> {
-//            // 检查登录用户信息是不是UserDetails，排除掉没有用户参与的流程
-//            if (context.getPrincipal().getPrincipal() instanceof UserDetails user) {
-//                // 获取申请的scopes
-//                Set<String> scopes = context.getAuthorizedScopes();
-//                // 获取用户的权限
-//                Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
-//                // 提取权限并转为字符串
-//                Set<String> authoritySet = Optional.ofNullable(authorities).orElse(Collections.emptyList()).stream()
-//                        // 获取权限字符串
-//                        .map(GrantedAuthority::getAuthority)
-//                        // 去重
-//                        .collect(Collectors.toSet());
-//
-//                // 合并scope与用户信息
-//                authoritySet.addAll(scopes);
-//
-//                JwtClaimsSet.Builder claims = context.getClaims();
-//                // 将权限信息放入jwt的claims中（也可以生成一个以指定字符分割的字符串放入）
-//                claims.claim("authorities", authoritySet);
-//                // 放入其它自定内容
-//                // 角色、头像...
-//            }
-//        };
     }
 
     /**
-     * 自定义jwt解析器，设置解析出来的权限信息的前缀与在jwt中的key  ProviderManager.authenticate(Authentication authentication)打断点
-     * JwtAuthenticationProvider.authenticate(Authentication authentication)
+     * 自定义jwt解析器，设置解析出来的权限信息的前缀与在jwt中的key
      *
      * @return jwt解析器 JwtAuthenticationConverter
      */
@@ -246,7 +215,7 @@ public class AuthorizationConfig {
         // 设置解析权限信息的前缀，设置为空是去掉前缀
         grantedAuthoritiesConverter.setAuthorityPrefix("");
         // 设置权限信息在jwt claims中的key
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
+        grantedAuthoritiesConverter.setAuthoritiesClaimName(SecurityConstants.AUTHORITIES_KEY);
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
@@ -427,7 +396,7 @@ public class AuthorizationConfig {
                     设置token签发地址(http(s)://{ip}:{port}/context-path, http(s)://domain.com/context-path)
                     如果需要通过ip访问这里就是ip，如果是有域名映射就填域名，通过什么方式访问该服务这里就填什么
                  */
-                .issuer("http://192.168.80.144:8080")
+                .issuer("http://192.168.120.33:8080")
                 .build();
     }
 
@@ -448,6 +417,5 @@ public class AuthorizationConfig {
                 .build();
         return new InMemoryUserDetailsManager(user);
     }
-
 
 }

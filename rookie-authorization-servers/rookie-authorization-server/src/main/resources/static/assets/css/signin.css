@@ -19,7 +19,7 @@ body {
   z-index: 2;
 }
 
-.form-signin input[type="username"] {
+.form-signin input[name="username"] {
   margin-bottom: -1px;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
@@ -29,4 +29,22 @@ body {
   margin-bottom: 10px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+}
+.form-signin input[name="verifyCode"] {
+  width: 155%;
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.code-image {
+  width: 100%;
+  background: black;
+  margin-bottom: 10px;
+  border-bottom-right-radius: 0.375rem;
+}
+
+.verify-code-box {
+  display: flex;
 }

@@ -1,7 +1,7 @@
 package com.rookie.bigdata.authorization.sms;
 
 
-import com.rookie.bigdata.authorization.CaptchaAuthenticationProvider;
+import com.rookie.bigdata.authorization.captcha.CaptchaAuthenticationProvider;
 import com.rookie.bigdata.constant.SecurityConstants;
 import com.rookie.bigdata.exception.InvalidCaptchaException;
 import jakarta.servlet.http.HttpServletRequest;
