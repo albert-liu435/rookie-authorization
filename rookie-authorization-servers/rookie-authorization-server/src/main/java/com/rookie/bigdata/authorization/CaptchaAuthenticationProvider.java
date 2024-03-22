@@ -1,6 +1,7 @@
 package com.rookie.bigdata.authorization;
 
 
+import com.rookie.bigdata.constant.SecurityConstants;
 import com.rookie.bigdata.exception.InvalidCaptchaException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,8 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Objects;
+
 
 /**
  * @Class CaptchaAuthenticationProvider
@@ -26,11 +29,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * @Date 2024/3/22 13:27
  * @Version 1.0
  */
-
-
-
 @Slf4j
-//@Component
 public class CaptchaAuthenticationProvider extends DaoAuthenticationProvider {
 
     /**
@@ -39,7 +38,7 @@ public class CaptchaAuthenticationProvider extends DaoAuthenticationProvider {
      * 设置调用父类关于这两个属性的set方法设置进去
      *
      * @param userDetailsService 用户服务，给框架提供用户信息
-     * @param passwordEncoder 密码解析器，用于加密和校验密码
+     * @param passwordEncoder    密码解析器，用于加密和校验密码
      */
     public CaptchaAuthenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         super.setPasswordEncoder(passwordEncoder);
@@ -56,6 +55,14 @@ public class CaptchaAuthenticationProvider extends DaoAuthenticationProvider {
             throw new InvalidCaptchaException("Failed to get the current request.");
         }
         HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
+
+        // 获取当前登录方式
+        //短信验证码登录时不需要图形验证码校验的可以在CaptchaAuthenticationProvider类中添加一个校验，判断一下登录类型
+        String loginType = request.getParameter("loginType");
+        if (Objects.equals(loginType, SecurityConstants.SMS_LOGIN_TYPE)) {
+            log.info("It isn't necessary captcha authenticate.");
+            return super.authenticate(authentication);
+        }
 
         // 获取参数中的验证码
         String code = request.getParameter("code");
@@ -77,4 +84,3 @@ public class CaptchaAuthenticationProvider extends DaoAuthenticationProvider {
         return super.authenticate(authentication);
     }
 }
-
