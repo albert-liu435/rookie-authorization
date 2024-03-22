@@ -9,10 +9,10 @@
     </parent>
 
     <groupId>com.rookie.bigdata</groupId>
-    <artifactId>rookie-authorization-client</artifactId>
+    <artifactId>rookie-authorization-resource</artifactId>
     <version>0.0.1</version>
-    <name>rookie-authorization-client</name>
-    <description>rookie-authorization-client</description>
+    <name>rookie-authorization-resource</name>
+    <description>rookie-authorization-resource</description>
 
     <properties>
         <java.version>17</java.version>
@@ -23,21 +23,13 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
