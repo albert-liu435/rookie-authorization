@@ -10,6 +10,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationConverter;
 import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationProvider;
 import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationToken;
+import com.rookie.bigdata.util.SecurityUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -151,7 +152,10 @@ public class AuthorizationConfig {
                 );
         // 添加BearerTokenAuthenticationFilter，将认证服务当做一个资源服务，解析请求头中的token
         http.oauth2ResourceServer((resourceServer) -> resourceServer
-                .jwt(Customizer.withDefaults()));
+                .jwt(Customizer.withDefaults())
+                .accessDeniedHandler(SecurityUtils::exceptionHandler)
+                .authenticationEntryPoint(SecurityUtils::exceptionHandler)
+        );
 
         return http.build();
     }
@@ -347,3 +351,4 @@ public class AuthorizationConfig {
     }
 
 }
+
