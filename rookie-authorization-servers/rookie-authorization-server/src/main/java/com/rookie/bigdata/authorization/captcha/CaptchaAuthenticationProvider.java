@@ -59,7 +59,8 @@ public class CaptchaAuthenticationProvider extends DaoAuthenticationProvider {
         // 获取当前登录方式
         //短信验证码登录时不需要图形验证码校验的可以在CaptchaAuthenticationProvider类中添加一个校验，判断一下登录类型
         String loginType = request.getParameter("loginType");
-        if (Objects.equals(loginType, SecurityConstants.SMS_LOGIN_TYPE)) {
+        if (!Objects.equals(loginType, SecurityConstants.PASSWORD_LOGIN_TYPE)) {
+            // 只要不是密码登录都不需要校验图形验证码
             log.info("It isn't necessary captcha authenticate.");
             return super.authenticate(authentication);
         }
