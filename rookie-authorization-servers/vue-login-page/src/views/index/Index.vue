@@ -16,16 +16,16 @@
       <n-card title="Token展示" hoverable v-if="accessToken">
         <n-table :single-line="false">
           <thead>
-            <tr>
-              <th style="width: 105px">Key</th>
-              <th>Value</th>
-            </tr>
+          <tr>
+            <th style="width: 105px">Key</th>
+            <th>Value</th>
+          </tr>
           </thead>
           <tbody>
-            <tr v-for="(v, k) in accessToken" :key="k">
-              <td>{{ k }}</td>
-              <td>{{ v }}</td>
-            </tr>
+          <tr v-for="(v, k) in accessToken" :key="k">
+            <td>{{ k }}</td>
+            <td>{{ v }}</td>
+          </tr>
           </tbody>
         </n-table>
       </n-card>
@@ -35,9 +35,9 @@
 
 <script setup lang="ts">
 import router from '../../router'
-import { createDiscreteApi } from 'naive-ui'
+// import { createDiscreteApi } from 'naive-ui'
 
-const { message } = createDiscreteApi(['message'])
+// const { message } = createDiscreteApi(['message'])
 // 从缓存中获取token
 const accessToken = JSON.parse(String(localStorage.getItem('accessToken')))
 
