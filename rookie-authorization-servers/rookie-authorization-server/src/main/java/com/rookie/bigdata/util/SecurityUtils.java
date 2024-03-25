@@ -24,11 +24,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * @Class SecurityUtils
- * @Description 认证鉴权工具
- * @Author rookie
- * @Date 2024/3/22 9:17
- * @Version 1.0
+ * 认证鉴权工具
+ *
+ * @author vains
  */
 @Slf4j
 public class SecurityUtils {
@@ -65,10 +63,8 @@ public class SecurityUtils {
         Map<String, String[]> parameterMap = request.getParameterMap();
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>(parameterMap.size());
         parameterMap.forEach((key, values) -> {
-            if (values.length > 0) {
-                for (String value : values) {
-                    parameters.add(key, value);
-                }
+            for (String value : values) {
+                parameters.add(key, value);
             }
         });
         return parameters;

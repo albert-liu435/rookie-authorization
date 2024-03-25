@@ -5,10 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-import com.rookie.bigdata.entity.Oauth2BasicUser;
-import com.rookie.bigdata.entity.SysAuthority;
-import com.rookie.bigdata.entity.SysRoleAuthority;
-import com.rookie.bigdata.entity.SysUserRole;
+import com.rookie.bigdata.entity.*;
 import com.rookie.bigdata.mapper.Oauth2BasicUserMapper;
 import com.rookie.bigdata.mapper.SysAuthorityMapper;
 import com.rookie.bigdata.mapper.SysRoleAuthorityMapper;
@@ -16,7 +13,6 @@ import com.rookie.bigdata.mapper.SysUserRoleMapper;
 import com.rookie.bigdata.model.security.CustomGrantedAuthority;
 import com.rookie.bigdata.service.IOauth2BasicUserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -77,5 +73,16 @@ public class Oauth2BasicUserServiceImpl extends ServiceImpl<Oauth2BasicUserMappe
         Set<CustomGrantedAuthority> authorities = Optional.ofNullable(menus).orElse(Collections.emptyList()).stream().map(SysAuthority::getUrl).map(CustomGrantedAuthority::new).collect(Collectors.toSet());
         basicUser.setAuthorities(authorities);
         return basicUser;
+    }
+
+    @Override
+    public Integer saveByThirdAccount(Oauth2ThirdAccount thirdAccount) {
+        Oauth2BasicUser basicUser = new Oauth2BasicUser();
+        basicUser.setName(thirdAccount.getName());
+        basicUser.setAvatarUrl(thirdAccount.getAvatarUrl());
+        basicUser.setDeleted(Boolean.FALSE);
+        basicUser.setSourceFrom(thirdAccount.getType());
+        this.save(basicUser);
+        return basicUser.getId();
     }
 }
