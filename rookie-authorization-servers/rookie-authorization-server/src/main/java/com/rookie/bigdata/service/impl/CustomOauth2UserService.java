@@ -5,6 +5,7 @@ import com.rookie.bigdata.authorization.wechat.WechatUserRequestEntityConverter;
 import com.rookie.bigdata.authorization.wechat.WechatUserResponseConverter;
 import com.rookie.bigdata.entity.Oauth2ThirdAccount;
 import com.rookie.bigdata.exception.InvalidCaptchaException;
+import com.rookie.bigdata.model.security.BasicOAuth2User;
 import com.rookie.bigdata.service.IOauth2ThirdAccountService;
 import com.rookie.bigdata.strategy.context.Oauth2UserConverterContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -68,17 +69,14 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         try {
             OAuth2User oAuth2User = super.loadUser(userRequest);
+
             // 转为项目中的三方用户信息
-            Oauth2ThirdAccount oauth2ThirdAccount = userConverterContext.convert(userRequest, oAuth2User);
+            BasicOAuth2User basicOauth2User = userConverterContext.convert(userRequest, oAuth2User);
+
             // 检查用户信息
-            thirdAccountService.checkAndSaveUser(oauth2ThirdAccount);
-            // 将loginType设置至attributes中
-            LinkedHashMap<String, Object> attributes = new LinkedHashMap<>(oAuth2User.getAttributes());
-            // 将RegistrationId当做登录类型
-            attributes.put("loginType", userRequest.getClientRegistration().getRegistrationId());
-            String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint()
-                    .getUserNameAttributeName();
-            return new DefaultOAuth2User(oAuth2User.getAuthorities(), attributes, userNameAttributeName);
+            thirdAccountService.checkAndSaveUser(basicOauth2User);
+
+            return basicOauth2User;
         } catch (Exception e) {
             // 获取当前request
             RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();

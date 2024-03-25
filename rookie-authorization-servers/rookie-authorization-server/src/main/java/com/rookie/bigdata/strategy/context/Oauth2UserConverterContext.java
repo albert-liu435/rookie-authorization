@@ -2,6 +2,7 @@ package com.rookie.bigdata.strategy.context;
 
 
 import com.rookie.bigdata.entity.Oauth2ThirdAccount;
+import com.rookie.bigdata.model.security.BasicOAuth2User;
 import com.rookie.bigdata.strategy.Oauth2UserConverterStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -53,26 +54,31 @@ public class Oauth2UserConverterContext {
      *
      * @param userRequest  获取三方用户信息入参
      * @param oAuth2User 三方登录获取到的认证信息
-     * @return {@link Oauth2ThirdAccount}
+     * @return {@link BasicOAuth2User}
      */
-    public Oauth2ThirdAccount convert(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
+    public BasicOAuth2User convert(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
         // 获取三方登录配置的registrationId，这里将他当做登录方式
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        // 获取三方账号字段
+        String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint()
+                .getUserNameAttributeName();
         // 转换用户信息
-        Oauth2ThirdAccount oauth2ThirdAccount = this.getInstance(registrationId).convert(oAuth2User);
+        BasicOAuth2User basicOauth2User = this.getInstance(registrationId).convert(oAuth2User);
+        // 设置三方账号字段
+        basicOauth2User.setNameAttributeKey(userNameAttributeName);
         // 获取AccessToken
         OAuth2AccessToken accessToken = userRequest.getAccessToken();
         // 设置token
-        oauth2ThirdAccount.setCredentials(accessToken.getTokenValue());
+        basicOauth2User.setCredentials(accessToken.getTokenValue());
         // 设置账号的方式
-        oauth2ThirdAccount.setType(registrationId);
+        basicOauth2User.setType(registrationId);
         Instant expiresAt = accessToken.getExpiresAt();
         if (expiresAt != null) {
             LocalDateTime tokenExpiresAt = expiresAt.atZone(ZoneId.of("UTC")).toLocalDateTime();
             // token过期时间
-            oauth2ThirdAccount.setCredentialsExpiresAt(tokenExpiresAt);
+            basicOauth2User.setCredentialsExpiresAt(tokenExpiresAt);
         }
-        return oauth2ThirdAccount;
+        return basicOauth2User;
     }
 
 }

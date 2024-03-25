@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.rookie.bigdata.entity.Oauth2ThirdAccount;
 import com.rookie.bigdata.mapper.Oauth2ThirdAccountMapper;
+import com.rookie.bigdata.model.security.BasicOAuth2User;
 import com.rookie.bigdata.service.IOauth2BasicUserService;
 import com.rookie.bigdata.service.IOauth2ThirdAccountService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -25,7 +27,11 @@ public class Oauth2ThirdAccountServiceImpl extends ServiceImpl<Oauth2ThirdAccoun
     private final IOauth2BasicUserService basicUserService;
 
     @Override
-    public void checkAndSaveUser(Oauth2ThirdAccount thirdAccount) {
+    public void checkAndSaveUser(BasicOAuth2User oAuth2User) {
+        Oauth2ThirdAccount thirdAccount = new Oauth2ThirdAccount();
+        // 转移数据
+        BeanUtils.copyProperties(oAuth2User, thirdAccount);
+
         // 构建三方唯一id和三方登录方式的查询条件
         Oauth2ThirdAccount oauth2ThirdAccount = this.lambdaQuery().eq(Oauth2ThirdAccount::getType, thirdAccount.getType())
                 .eq(Oauth2ThirdAccount::getUniqueId, thirdAccount.getUniqueId()).one();
@@ -49,6 +55,9 @@ public class Oauth2ThirdAccountServiceImpl extends ServiceImpl<Oauth2ThirdAccoun
             oauth2ThirdAccount.setUpdateTime(null);
             this.updateById(oauth2ThirdAccount);
         }
+
+        oAuth2User.setName(oAuth2User.getName());
+        oAuth2User.setSourceFrom(oAuth2User.getType());
     }
 
 }
