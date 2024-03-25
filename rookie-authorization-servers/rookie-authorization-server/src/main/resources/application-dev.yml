@@ -10,6 +10,8 @@ server:
   port: 8080
 
 
+
+
 # Mybatis-Plus 配置
 mybatis-plus:
   # 扫描mapper文件
