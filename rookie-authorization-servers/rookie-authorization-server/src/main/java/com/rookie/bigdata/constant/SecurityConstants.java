@@ -57,7 +57,13 @@ public class SecurityConstants {
     /**
      * 随机字符串请求头名字
      */
-    public static final String NONCE_HEADER_NAME = "nonceId";
+//    public static final String NONCE_HEADER_NAME = "nonceId";
+
+
+    /**
+     * 随机字符串请求头名字
+     */
+    public static final String NONCE_HEADER_NAME = "nonce";
 
     /**
      * 登录方式入参名
