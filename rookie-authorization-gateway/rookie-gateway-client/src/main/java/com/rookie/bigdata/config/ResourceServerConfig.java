@@ -27,11 +27,8 @@ import reactor.core.publisher.Mono;
  */
 @Configuration
 @EnableWebFluxSecurity
-@RequiredArgsConstructor
 @EnableReactiveMethodSecurity
 public class ResourceServerConfig {
-
-    private final OAuth2ClientProperties oAuth2ClientProperties;
 
     /**
      * 配置认证相关的过滤器链
@@ -89,18 +86,6 @@ public class ResourceServerConfig {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
         return new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter);
-    }
-
-    /**
-     * 从认证服务的issuer地址获取JwtDecoder实例
-     *
-     * @return JwtDecoder实例
-     */
-    @Bean
-    public ReactiveJwtDecoder jwtDecoder() {
-        // 根据providerId获取客户端Provider配置
-        OAuth2ClientProperties.Provider provider = oAuth2ClientProperties.getProvider().get("custom-issuer");
-        return ReactiveJwtDecoders.fromIssuerLocation(provider.getIssuerUri());
     }
 
 }
