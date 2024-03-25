@@ -6,6 +6,7 @@ import com.rookie.bigdata.authorization.handler.ConsentAuthenticationFailureHand
 import com.rookie.bigdata.authorization.handler.ConsentAuthorizationResponseHandler;
 import com.rookie.bigdata.authorization.handler.DeviceAuthorizationResponseHandler;
 import com.rookie.bigdata.authorization.handler.LoginTargetAuthenticationEntryPoint;
+import com.rookie.bigdata.constant.SecurityConstants;
 import com.rookie.bigdata.property.CustomSecurityProperties;
 import com.rookie.bigdata.support.RedisSecurityContextRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -219,7 +220,16 @@ public class SecurityUtils {
             // 认证服务配置
             httpConfigurer
                     // 开启OpenID Connect 1.0协议相关端点
-                    .oidc(Customizer.withDefaults());
+                    .oidc(oidcConfigurer -> oidcConfigurer
+                            .providerConfigurationEndpoint(provider -> provider
+                                    .providerConfigurationCustomizer(builder -> builder
+                                            // 为OIDC端点添加短信认证码的登录方式
+                                            .grantType(SecurityConstants.GRANT_TYPE_SMS_CODE)
+                                    )
+                            )
+                    )
+                    // 让认证服务器元数据中有自定义的认证方式
+                    .authorizationServerMetadataEndpoint(metadata -> metadata.authorizationServerMetadataCustomizer(customizer -> customizer.grantType(SecurityConstants.GRANT_TYPE_SMS_CODE)));
         } else {
             // 资源服务配置
             // 添加BearerTokenAuthenticationFilter，将认证服务当做一个资源服务，解析请求头中的token

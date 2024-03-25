@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
-
+import static com.rookie.bigdata.property.CustomSecurityProperties.PREFIX;
 
 /**
  * 自定义认证配置类
@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Data
 @Configuration
-@ConfigurationProperties(prefix = CustomSecurityProperties.PREFIX)
+@ConfigurationProperties(prefix = PREFIX)
 public class CustomSecurityProperties {
 
     static final String PREFIX = "custom.security";
@@ -22,28 +22,28 @@ public class CustomSecurityProperties {
     /**
      * 登录页面地址
      * 注意：不是前后端分离的项目不要写完整路径，当前项目部署的IP也不行！！！
-     * e.g. http://当前项目IP:当前项目端口/activated
+     * 错误e.g. http://当前项目IP:当前项目端口/activated
      */
     private String loginUrl = "/login";
 
     /**
      * 授权确认页面
      * 注意：不是前后端分离的项目不要写完整路径，当前项目部署的IP也不行！！！
-     * e.g. http://当前项目IP:当前项目端口/activated
+     * 错误e.g. http://当前项目IP:当前项目端口/activated
      */
     private String consentPageUri = "/oauth2/consent";
 
     /**
      * 授权码验证页面
      * 注意：不是前后端分离的项目不要写完整路径，当前项目部署的IP也不行！！！
-     * e.g. http://当前项目IP:当前项目端口/activated
+     * 错误e.g. http://当前项目IP:当前项目端口/activated
      */
     private String deviceActivateUri = "/activate";
 
     /**
      * 授权码验证成功后页面
      * 注意：不是前后端分离的项目不要写完整路径，当前项目部署的IP也不行！！！
-     * e.g. http://当前项目IP:当前项目端口/activated
+     * 错误e.g. http://当前项目IP:当前项目端口/activated
      */
     private String deviceActivatedUri = "/activated";
 
