@@ -6,6 +6,7 @@ import com.rookie.bigdata.authorization.handler.ConsentAuthenticationFailureHand
 import com.rookie.bigdata.authorization.handler.ConsentAuthorizationResponseHandler;
 import com.rookie.bigdata.authorization.handler.DeviceAuthorizationResponseHandler;
 import com.rookie.bigdata.authorization.handler.LoginTargetAuthenticationEntryPoint;
+import com.rookie.bigdata.property.CustomSecurityProperties;
 import com.rookie.bigdata.support.RedisSecurityContextRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -205,7 +206,10 @@ public class SecurityUtils {
      * @param corsFilter                     跨域处理过滤器
      */
     @SneakyThrows
-    public static void applyBasicSecurity(HttpSecurity http, RedisSecurityContextRepository redisSecurityContextRepository, CorsFilter corsFilter) {
+    public static void applyBasicSecurity(HttpSecurity http,
+                                          CorsFilter corsFilter,
+                                          CustomSecurityProperties customSecurityProperties,
+                                          RedisSecurityContextRepository redisSecurityContextRepository) {
         // 添加跨域过滤器
         http.addFilter(corsFilter);
 
@@ -230,17 +234,14 @@ public class SecurityUtils {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(AbstractHttpConfigurer::disable);
 
-        // 同时支持redis与session的认证存储
-        HttpSessionSecurityContextRepository sessionSecurityContextRepository = new HttpSessionSecurityContextRepository();
-        DelegatingSecurityContextRepository delegatingSecurityContextRepository = new DelegatingSecurityContextRepository(redisSecurityContextRepository, sessionSecurityContextRepository);
         // 使用redis存储、读取登录的认证信息
-        http.securityContext(context -> context.securityContextRepository(delegatingSecurityContextRepository));
+        http.securityContext(context -> context.securityContextRepository(redisSecurityContextRepository));
 
         http
                 // 当未登录时访问认证端点时重定向至login页面
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
-                                new LoginTargetAuthenticationEntryPoint(LOGIN_URL),
+                                new LoginTargetAuthenticationEntryPoint(customSecurityProperties.getLoginUrl(), customSecurityProperties.getDeviceActivateUri()),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 )
@@ -260,6 +261,7 @@ public class SecurityUtils {
      * @param authorizationServerSettings 认证服务配置类
      */
     public static void applyDeviceSecurity(HttpSecurity http,
+                                           CustomSecurityProperties customSecurityProperties,
                                            RegisteredClientRepository registeredClientRepository,
                                            AuthorizationServerSettings authorizationServerSettings) {
         // 新建设备码converter和provider
@@ -273,34 +275,34 @@ public class SecurityUtils {
                 // 设置自定义用户确认授权页
                 .authorizationEndpoint(authorizationEndpoint -> {
                             // 校验授权确认页面是否为完整路径；是否是前后端分离的页面
-                            boolean absoluteUrl = UrlUtils.isAbsoluteUrl(CONSENT_PAGE_URI);
+                            boolean absoluteUrl = UrlUtils.isAbsoluteUrl(customSecurityProperties.getConsentPageUri());
                             // 如果是分离页面则重定向，否则转发请求
-                            authorizationEndpoint.consentPage(absoluteUrl ? CUSTOM_CONSENT_REDIRECT_URI : CONSENT_PAGE_URI);
+                            authorizationEndpoint.consentPage(absoluteUrl ? CUSTOM_CONSENT_REDIRECT_URI : customSecurityProperties.getConsentPageUri());
                             if (absoluteUrl) {
                                 // 适配前后端分离的授权确认页面，成功/失败响应json
-                                authorizationEndpoint.errorResponseHandler(new ConsentAuthenticationFailureHandler());
-                                authorizationEndpoint.authorizationResponseHandler(new ConsentAuthorizationResponseHandler());
+                                authorizationEndpoint.errorResponseHandler(new ConsentAuthenticationFailureHandler(customSecurityProperties.getConsentPageUri()));
+                                authorizationEndpoint.authorizationResponseHandler(new ConsentAuthorizationResponseHandler(customSecurityProperties.getConsentPageUri()));
                             }
                         }
                 )
                 // 设置设备码用户验证url(自定义用户验证页)
                 .deviceAuthorizationEndpoint(deviceAuthorizationEndpoint ->
-                        deviceAuthorizationEndpoint.verificationUri(UrlUtils.isAbsoluteUrl(DEVICE_ACTIVATE_URI) ? CUSTOM_DEVICE_REDIRECT_URI : DEVICE_ACTIVATE_URI)
+                        deviceAuthorizationEndpoint.verificationUri(UrlUtils.isAbsoluteUrl(customSecurityProperties.getDeviceActivatedUri()) ? CUSTOM_DEVICE_REDIRECT_URI : customSecurityProperties.getDeviceActivateUri())
                 )
                 // 设置验证设备码用户确认页面
                 .deviceVerificationEndpoint(deviceVerificationEndpoint -> {
                             // 校验授权确认页面是否为完整路径；是否是前后端分离的页面
-                            boolean absoluteUrl = UrlUtils.isAbsoluteUrl(CONSENT_PAGE_URI);
+                            boolean absoluteUrl = UrlUtils.isAbsoluteUrl(customSecurityProperties.getConsentPageUri());
                             // 如果是分离页面则重定向，否则转发请求
-                            deviceVerificationEndpoint.consentPage(absoluteUrl ? CUSTOM_CONSENT_REDIRECT_URI : CONSENT_PAGE_URI);
+                            deviceVerificationEndpoint.consentPage(absoluteUrl ? CUSTOM_CONSENT_REDIRECT_URI : customSecurityProperties.getConsentPageUri());
                             if (absoluteUrl) {
                                 // 适配前后端分离的授权确认页面，失败响应json
-                                deviceVerificationEndpoint.errorResponseHandler(new ConsentAuthenticationFailureHandler());
+                                deviceVerificationEndpoint.errorResponseHandler(new ConsentAuthenticationFailureHandler(customSecurityProperties.getConsentPageUri()));
                             }
                             // 如果授权码验证页面或者授权确认页面是前后端分离的
-                            if (UrlUtils.isAbsoluteUrl(DEVICE_ACTIVATE_URI) || absoluteUrl) {
+                            if (UrlUtils.isAbsoluteUrl(customSecurityProperties.getDeviceActivateUri()) || absoluteUrl) {
                                 // 添加响应json处理
-                                deviceVerificationEndpoint.deviceVerificationResponseHandler(new DeviceAuthorizationResponseHandler());
+                                deviceVerificationEndpoint.deviceVerificationResponseHandler(new DeviceAuthorizationResponseHandler(customSecurityProperties.getDeviceActivatedUri()));
                             }
                         }
                 )

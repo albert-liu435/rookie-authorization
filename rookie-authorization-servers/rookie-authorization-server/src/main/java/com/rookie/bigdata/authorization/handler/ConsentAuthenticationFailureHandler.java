@@ -6,6 +6,7 @@ import com.rookie.bigdata.util.JsonUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,7 +21,6 @@ import org.springframework.security.web.util.UrlUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static com.rookie.bigdata.constant.SecurityConstants.CONSENT_PAGE_URI;
 
 
 /**
@@ -28,10 +28,16 @@ import static com.rookie.bigdata.constant.SecurityConstants.CONSENT_PAGE_URI;
  *
  * @author vains
  */
+@RequiredArgsConstructor
 public class ConsentAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
+    /**
+     * 授权确认页面路径
+     */
+    private final String consentPageUri;
+
     @Override
-    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         // 获取当前认证信息
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // 获取具体的异常
@@ -47,7 +53,7 @@ public class ConsentAuthenticationFailureHandler implements AuthenticationFailur
         }
 
         // 授权确认页面提交的请求
-        if (request.getMethod().equals(HttpMethod.POST.name()) && UrlUtils.isAbsoluteUrl(CONSENT_PAGE_URI)) {
+        if (request.getMethod().equals(HttpMethod.POST.name()) && UrlUtils.isAbsoluteUrl(consentPageUri)) {
             // 写回json异常
             Result<Object> result = Result.error(HttpStatus.BAD_REQUEST.value(), message);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());

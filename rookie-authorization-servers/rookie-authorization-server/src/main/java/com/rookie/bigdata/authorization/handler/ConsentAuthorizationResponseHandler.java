@@ -6,6 +6,7 @@ import com.rookie.bigdata.util.JsonUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -25,7 +26,6 @@ import org.springframework.web.util.UriUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static com.rookie.bigdata.constant.SecurityConstants.CONSENT_PAGE_URI;
 import static org.springframework.security.oauth2.core.OAuth2ErrorCodes.INVALID_REQUEST;
 
 /**
@@ -33,15 +33,18 @@ import static org.springframework.security.oauth2.core.OAuth2ErrorCodes.INVALID_
  *
  * @author vains
  */
+@RequiredArgsConstructor
 public class ConsentAuthorizationResponseHandler implements AuthenticationSuccessHandler {
+
+    private final String consentPageUri;
 
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         // 获取将要重定向的回调地址
         String redirectUri = this.getAuthorizationResponseUri(authentication);
-        if (request.getMethod().equals(HttpMethod.POST.name()) && UrlUtils.isAbsoluteUrl(CONSENT_PAGE_URI)) {
+        if (request.getMethod().equals(HttpMethod.POST.name()) && UrlUtils.isAbsoluteUrl(consentPageUri)) {
             // 如果是post请求并且CONSENT_PAGE_URI是完整的地址，则响应json
             Result<String> success = Result.success(redirectUri);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());

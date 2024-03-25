@@ -6,6 +6,7 @@ import com.rookie.bigdata.util.JsonUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -13,19 +14,21 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static com.rookie.bigdata.constant.SecurityConstants.DEVICE_ACTIVATED_URI;
 
 /**
  * 校验设备码成功响应类
  *
  * @author vains
  */
+@RequiredArgsConstructor
 public class DeviceAuthorizationResponseHandler implements AuthenticationSuccessHandler {
 
+    private final String deviceActivatedUri;
+
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         // 写回json数据
-        Result<Object> result = Result.success(DEVICE_ACTIVATED_URI);
+        Result<Object> result = Result.success(deviceActivatedUri);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(JsonUtils.objectCovertToJson(result));

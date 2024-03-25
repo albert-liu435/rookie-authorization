@@ -11,6 +11,7 @@ import com.rookie.bigdata.entity.SysAuthority;
 import com.rookie.bigdata.model.Result;
 import com.rookie.bigdata.model.response.Oauth2UserinfoResult;
 import com.rookie.bigdata.model.security.CustomGrantedAuthority;
+import com.rookie.bigdata.property.CustomSecurityProperties;
 import com.rookie.bigdata.service.IOauth2BasicUserService;
 import com.rookie.bigdata.service.IOauth2ThirdAccountService;
 import com.rookie.bigdata.service.ISysAuthorityService;
@@ -73,6 +74,8 @@ public class AuthorizationController {
     private final IOauth2BasicUserService basicUserService;
 
     private final IOauth2ThirdAccountService thirdAccountService;
+
+    private final CustomSecurityProperties customSecurityProperties;
 
     private final RegisteredClientRepository registeredClientRepository;
 
@@ -192,7 +195,7 @@ public class AuthorizationController {
                                    @RequestParam(value = "user_code", required = false) String userCode) {
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
-                .fromUriString(DEVICE_ACTIVATE_URI)
+                .fromUriString(customSecurityProperties.getDeviceActivateUri())
                 .queryParam("userCode", userCode)
                 .queryParam(NONCE_HEADER_NAME, session.getId());
         return "redirect:" + uriBuilder.build(Boolean.TRUE).toUriString();
@@ -246,7 +249,7 @@ public class AuthorizationController {
 
         // 携带当前请求参数与nonceId重定向至前端页面
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
-                .fromUriString(CONSENT_PAGE_URI)
+                .fromUriString(customSecurityProperties.getConsentPageUri())
                 .queryParam(OAuth2ParameterNames.SCOPE, UriUtils.encode(scope, StandardCharsets.UTF_8))
                 .queryParam(OAuth2ParameterNames.STATE, UriUtils.encode(state, StandardCharsets.UTF_8))
                 .queryParam(OAuth2ParameterNames.CLIENT_ID, clientId)
@@ -254,7 +257,7 @@ public class AuthorizationController {
                 .queryParam(NONCE_HEADER_NAME, ObjectUtils.isEmpty(nonceId) ? session.getId() : nonceId);
 
         String uriString = uriBuilder.build(Boolean.TRUE).toUriString();
-        if (ObjectUtils.isEmpty(userCode) || !UrlUtils.isAbsoluteUrl(DEVICE_ACTIVATE_URI)) {
+        if (ObjectUtils.isEmpty(userCode) || !UrlUtils.isAbsoluteUrl(customSecurityProperties.getDeviceActivateUri())) {
             // 不是设备码模式或者设备码验证页面不是前后端分离的，无需返回json，直接重定向
             redirectStrategy.sendRedirect(request, response, uriString);
             return null;
