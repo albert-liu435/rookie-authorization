@@ -20,6 +20,7 @@
     <modules>
         <module>rookie-authorization-security</module>
         <module>rookie-authorization-servers</module>
+        <module>rookie-authorization-gateway</module>
     </modules>
 
     <properties>
