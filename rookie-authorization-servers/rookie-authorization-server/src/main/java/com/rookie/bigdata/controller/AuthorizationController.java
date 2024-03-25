@@ -74,7 +74,7 @@ public class AuthorizationController {
         // 获取jwt解析内容
         Jwt token = jwtAuthenticationToken.getToken();
         // 获取当前用户的账号
-        String account = token.getClaim(JwtClaimNames.SUB);
+        String account = token.getClaim("uniqueId");
         // 获取scope
         List<String> scopes = token.getClaimAsStringList("scope");
         List<String> claimAsStringList = token.getClaimAsStringList(SecurityConstants.AUTHORITIES_KEY);

@@ -12,16 +12,6 @@ public class SecurityConstants {
     /**
      * 微信登录相关参数——openid：用户唯一id
      */
-    public static final String OAUTH_LOGIN_TYPE = "loginType";
-
-    /**
-     * 微信登录相关参数——openid：用户唯一id
-     */
-    public static final String TOKEN_UNIQUE_ID = "uniqueId";
-
-    /**
-     * 微信登录相关参数——openid：用户唯一id
-     */
     public static final String WECHAT_PARAMETER_OPENID = "openid";
 
     /**
@@ -58,12 +48,6 @@ public class SecurityConstants {
      * 随机字符串请求头名字
      */
     public static final String NONCE_HEADER_NAME = "nonceId";
-
-
-    /**
-     * 随机字符串请求头名字
-     */
-//    public static final String NONCE_HEADER_NAME = "nonce";
 
     /**
      * 登录方式入参名
