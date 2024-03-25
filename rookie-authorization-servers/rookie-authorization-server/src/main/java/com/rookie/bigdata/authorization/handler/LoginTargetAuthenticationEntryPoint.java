@@ -1,8 +1,10 @@
 package com.rookie.bigdata.authorization.handler;
 
+import com.rookie.bigdata.constant.SecurityConstants;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
@@ -21,6 +23,7 @@ import java.nio.charset.StandardCharsets;
  * @Date 2024/3/25 16:50
  * @Version 1.0
  */
+@Slf4j
 public class LoginTargetAuthenticationEntryPoint extends LoginUrlAuthenticationEntryPoint {
 
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
@@ -36,6 +39,7 @@ public class LoginTargetAuthenticationEntryPoint extends LoginUrlAuthenticationE
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+
         // 获取登录表单的地址
         String loginForm = determineUrlToUseForThisRequest(request, response, authException);
         if (!UrlUtils.isAbsoluteUrl(loginForm)) {
@@ -50,8 +54,10 @@ public class LoginTargetAuthenticationEntryPoint extends LoginUrlAuthenticationE
         }
 
         // 绝对路径在重定向前添加target参数
-        String targetUrl = URLEncoder.encode(requestUrl.toString(), StandardCharsets.UTF_8);
-        this.redirectStrategy.sendRedirect(request, response, (loginForm + "?target=" + targetUrl));
+        String targetParameter = URLEncoder.encode(requestUrl.toString(), StandardCharsets.UTF_8);
+        String targetUrl = loginForm + "?target=" + targetParameter + "&" + SecurityConstants.NONCE_HEADER_NAME + "=" + request.getSession(Boolean.FALSE).getId();
+        log.debug("重定向至前后端分离的登录页面：{}", targetUrl);
+        this.redirectStrategy.sendRedirect(request, response, targetUrl);
 
     }
 }

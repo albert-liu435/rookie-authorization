@@ -24,7 +24,7 @@ const loginModel = ref({
   password: '',
   loginType: '',
   captchaId: '',
-  nonce: uuid()
+  nonce: getQueryString('nonce')
 })
 
 // 图形验证码的base64数据
@@ -40,8 +40,7 @@ const counterActive = ref(false)
 const getCaptcha = () => {
   axios({
     method: 'GET',
-    // url: 'http://192.168.81.134:8080/getCaptcha'
-    url: '192.168.81.134:8080/getCaptcha'
+    url: 'http://192.168.81.134:8080/getCaptcha'
   }).then((r) => {
     let result = r.data
     if (result.success) {
@@ -61,7 +60,7 @@ const submitLogin = () => {
   loginModel.value.loginType = 'passwordLogin'
   axios({
     method: 'post',
-    url: '192.168.81.134:8080/login',
+    url: 'http://192.168.81.134:8080/login',
     headers: {
       nonce: loginModel.value.nonce,
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -73,13 +72,7 @@ const submitLogin = () => {
       // message.info(`登录成功`)
       let target = getQueryString('target')
       if (target) {
-        let concatStr = ''
-        if (hasParam(target)) {
-          concatStr = '&'
-        } else {
-          concatStr = '?'
-        }
-        window.location.href = `${target}${concatStr}nonce=${loginModel.value.nonce}`
+        window.location.href = target
       }
     } else {
       message.warning(result.message)
@@ -94,7 +87,7 @@ const submitSmsLogin = () => {
   loginModel.value.loginType = 'smsCaptcha'
   axios({
     method: 'post',
-    url: '192.168.81.134:8080/login',
+    url: 'http://192.168.81.134:8080/login',
     headers: {
       nonce: loginModel.value.nonce,
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -106,13 +99,7 @@ const submitSmsLogin = () => {
       message.info(`登录成功`)
       let target = getQueryString('target')
       if (target) {
-        let concatStr = ''
-        if (hasParam(target)) {
-          concatStr = '&'
-        } else {
-          concatStr = '?'
-        }
-        window.location.href = `${target}${concatStr}nonce=${loginModel.value.nonce}`
+        window.location.href = target
       }
     } else {
       message.warning(result.message)
@@ -138,7 +125,7 @@ const getSmsCaptcha = () => {
   }
   axios({
     method: 'get',
-    url: `192.168.81.134:8080/getSmsCaptcha?phone=${loginModel.value.username}`
+    url: `http://192.168.81.134:8080/getSmsCaptcha?phone=${loginModel.value.username}`
   }).then((r) => {
     let result = r.data
     if (result.success) {
@@ -187,22 +174,12 @@ function getQueryString(name: string) {
   return null
 }
 
-const hasParam = (url: string) => {
-  url = decodeURIComponent(url)
-  let arr = url.split('?')
-  return arr.length > 1 && arr[1] !== ''
-}
-
 getCaptcha()
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo"
-         class="logo"
-         src="./assets/logo.svg"
-         width="125"
-         height="125" />
+    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">
       <HelloWorld msg="统一认证平台" />
@@ -211,82 +188,82 @@ getCaptcha()
 
   <main>
     <n-card title="">
-      <n-tabs default-value="signin"
-              size="large"
-              justify-content="space-evenly"
-              @update:value="handleUpdateValue">
-        <n-tab-pane name="signin"
-                    tab="账号登录">
+      <n-tabs
+        default-value="signin"
+        size="large"
+        justify-content="space-evenly"
+        @update:value="handleUpdateValue"
+      >
+        <n-tab-pane name="signin" tab="账号登录">
           <n-form>
             <n-form-item-row label="用户名">
-              <n-input v-model:value="loginModel.username"
-                       placeholder="手机号 / 邮箱" />
+              <n-input v-model:value="loginModel.username" placeholder="手机号 / 邮箱" />
             </n-form-item-row>
             <n-form-item-row label="密码">
-              <n-input v-model:value="loginModel.password"
-                       type="password"
-                       show-password-on="mousedown"
-                       placeholder="密码" />
+              <n-input
+                v-model:value="loginModel.password"
+                type="password"
+                show-password-on="mousedown"
+                placeholder="密码"
+              />
             </n-form-item-row>
             <n-form-item-row label="验证码">
               <n-input-group>
-                <n-input v-model:value="loginModel.code"
-                         placeholder="请输入验证码" />
-                <n-image @click="getCaptcha"
-                         width="130"
-                         height="34"
-                         :src="captchaImage"
-                         preview-disabled />
+                <n-input v-model:value="loginModel.code" placeholder="请输入验证码" />
+                <n-image
+                  @click="getCaptcha"
+                  width="130"
+                  height="34"
+                  :src="captchaImage"
+                  preview-disabled
+                />
               </n-input-group>
             </n-form-item-row>
           </n-form>
-          <n-button type="info"
-                    @click="submitLogin"
-                    block
-                    strong> 登录 </n-button>
+          <n-button type="info" @click="submitLogin" block strong> 登录 </n-button>
         </n-tab-pane>
-        <n-tab-pane name="signup"
-                    tab="短信登录">
+        <n-tab-pane name="signup" tab="短信登录">
           <n-form>
             <n-form-item-row label="手机号">
-              <n-input v-model:value="loginModel.username"
-                       placeholder="手机号 / 邮箱" />
+              <n-input v-model:value="loginModel.username" placeholder="手机号 / 邮箱" />
             </n-form-item-row>
             <n-form-item-row label="验证码">
               <n-input-group>
-                <n-input v-model:value="loginModel.code"
-                         placeholder="请输入验证码" />
-                <n-image @click="getCaptcha"
-                         width="130"
-                         height="34"
-                         :src="captchaImage"
-                         preview-disabled />
+                <n-input v-model:value="loginModel.code" placeholder="请输入验证码" />
+                <n-image
+                  @click="getCaptcha"
+                  width="130"
+                  height="34"
+                  :src="captchaImage"
+                  preview-disabled
+                />
               </n-input-group>
             </n-form-item-row>
             <n-form-item-row label="验证码">
               <n-input-group>
-                <n-input v-model:value="loginModel.password"
-                         placeholder="请输入验证码" />
-                <n-button type="info"
-                          @click="getSmsCaptcha"
-                          style="width: 130px"
-                          :disabled="counterActive">
+                <n-input v-model:value="loginModel.password" placeholder="请输入验证码" />
+                <n-button
+                  type="info"
+                  @click="getSmsCaptcha"
+                  style="width: 130px"
+                  :disabled="counterActive"
+                >
                   获取验证码
                   <span v-if="counterActive">
                     (
-                    <n-countdown :render="renderCountdown"
-                                 :on-finish="onFinish"
-                                 :duration="59 * 1000"
-                                 :active="counterActive" />
-                    )</span>
+                    <n-countdown
+                      :render="renderCountdown"
+                      :on-finish="onFinish"
+                      :duration="59 * 1000"
+                      :active="counterActive"
+                    />
+                    )</span
+                  >
                 </n-button>
               </n-input-group>
             </n-form-item-row>
           </n-form>
-          <n-button type="info"
-                    @click="submitSmsLogin"
-                    block
-                    strong> 登录 </n-button>
+          <n-button type="info" @click="submitSmsLogin" block strong> 登录 </n-button>
         </n-tab-pane>
       </n-tabs>
     </n-card>

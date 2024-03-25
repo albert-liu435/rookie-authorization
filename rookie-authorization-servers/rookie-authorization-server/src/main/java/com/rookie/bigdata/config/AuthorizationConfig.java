@@ -509,7 +509,7 @@ public class AuthorizationConfig {
                     设置token签发地址(http(s)://{ip}:{port}/context-path, http(s)://domain.com/context-path)
                     如果需要通过ip访问这里就是ip，如果是有域名映射就填域名，通过什么方式访问该服务这里就填什么
                  */
-                .issuer("http://192.168.120.33:8080")
+                .issuer("http://192.168.81.134:8080")
                 .build();
     }
 

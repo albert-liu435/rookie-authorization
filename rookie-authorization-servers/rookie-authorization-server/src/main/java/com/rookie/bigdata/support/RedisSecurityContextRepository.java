@@ -4,6 +4,7 @@ package com.rookie.bigdata.support;
 import com.rookie.bigdata.model.security.SupplierDeferredSecurityContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.DeferredSecurityContext;
 import org.springframework.security.core.context.SecurityContext;
@@ -32,7 +33,7 @@ import static com.rookie.bigdata.constant.SecurityConstants.NONCE_HEADER_NAME;
 @RequiredArgsConstructor
 public class RedisSecurityContextRepository implements SecurityContextRepository {
 
-    private final RedisOperator<Object> redisOperator;
+    private final RedisOperator<SecurityContext> redisOperator;
 
     private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder
             .getContextHolderStrategy();
@@ -48,12 +49,9 @@ public class RedisSecurityContextRepository implements SecurityContextRepository
 
     @Override
     public void saveContext(SecurityContext context, HttpServletRequest request, HttpServletResponse response) {
-        String nonce = request.getHeader(NONCE_HEADER_NAME);
+        String nonce = getNonce(request);
         if (ObjectUtils.isEmpty(nonce)) {
-            nonce = request.getParameter(NONCE_HEADER_NAME);
-            if (ObjectUtils.isEmpty(nonce)) {
-                return;
-            }
+            return;
         }
 
         // 如果当前的context是空的，则移除
@@ -68,12 +66,9 @@ public class RedisSecurityContextRepository implements SecurityContextRepository
 
     @Override
     public boolean containsContext(HttpServletRequest request) {
-        String nonce = request.getHeader(NONCE_HEADER_NAME);
+        String nonce = getNonce(request);
         if (ObjectUtils.isEmpty(nonce)) {
-            nonce = request.getParameter(NONCE_HEADER_NAME);
-            if (ObjectUtils.isEmpty(nonce)) {
-                return false;
-            }
+            return false;
         }
         // 检验当前请求是否有认证信息
         return redisOperator.get((SECURITY_CONTEXT_PREFIX_KEY + nonce)) != null;
@@ -96,19 +91,31 @@ public class RedisSecurityContextRepository implements SecurityContextRepository
             return null;
         }
 
-        String nonce = request.getHeader(NONCE_HEADER_NAME);
+        String nonce = getNonce(request);
         if (ObjectUtils.isEmpty(nonce)) {
-            nonce = request.getParameter(NONCE_HEADER_NAME);
-            if (ObjectUtils.isEmpty(nonce)) {
-                return null;
-            }
+            return null;
         }
 
         // 根据缓存id获取认证信息
-        Object o = redisOperator.get((SECURITY_CONTEXT_PREFIX_KEY + nonce));
-        if (o instanceof SecurityContext context) {
-            return context;
-        }
-        return null;
+        return redisOperator.get((SECURITY_CONTEXT_PREFIX_KEY + nonce));
     }
+
+    /**
+     * 先从请求头中找，找不到去请求参数中找，找不到获取当前session的id
+     *
+     * @param request 当前请求
+     * @return 随机字符串(sessionId)
+     */
+    private String getNonce(HttpServletRequest request) {
+        String nonce = request.getHeader(NONCE_HEADER_NAME);
+        if (ObjectUtils.isEmpty(nonce)) {
+            nonce = request.getParameter(NONCE_HEADER_NAME);
+            HttpSession session = request.getSession(Boolean.FALSE);
+            if (ObjectUtils.isEmpty(nonce) && session != null) {
+                nonce = session.getId();
+            }
+        }
+        return nonce;
+    }
+
 }
