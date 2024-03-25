@@ -28,6 +28,7 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -156,7 +157,11 @@ public class SmsCaptchaGrantAuthenticationProvider implements AuthenticationProv
             idToken = null;
         }
 
-        OAuth2Authorization authorization = authorizationBuilder.build();
+//        OAuth2Authorization authorization = authorizationBuilder.build();
+
+        OAuth2Authorization authorization = authorizationBuilder
+                //add principal attribute
+                .attribute(Principal.class.getName(),authenticate).build();
 
         // Save the OAuth2Authorization
         this.authorizationService.save(authorization);

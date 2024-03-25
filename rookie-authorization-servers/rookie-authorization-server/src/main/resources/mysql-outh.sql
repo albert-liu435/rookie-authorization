@@ -65,3 +65,8 @@ CREATE TABLE oauth2_registered_client (
                                           token_settings varchar(2000) NOT NULL,
                                           PRIMARY KEY (id)
 );
+
+
+--更新可以使用短信认证
+update  db1.oauth2_registered_client set authorization_grant_types ='refresh_token,client_credentials,authorization_code,urn:ietf:params:oauth:grant-type:sms_code'
+where client_id='messaging-client'
