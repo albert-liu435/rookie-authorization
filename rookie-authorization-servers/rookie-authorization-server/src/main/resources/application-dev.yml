@@ -8,3 +8,10 @@ spring:
     password: root
 server:
   port: 8080
+
+
+# Mybatis-Plus 配置
+mybatis-plus:
+  # 扫描mapper文件
+  mapper-locations:
+    - classpath:com/rookie/bigdata/mapper/xml/*Mapper.xml
