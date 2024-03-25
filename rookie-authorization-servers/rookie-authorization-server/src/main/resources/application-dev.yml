@@ -73,6 +73,8 @@ spring:
             authorization-uri: https://gitee.com/oauth/authorize
           github:
             user-name-attribute: login
+  jackson:
+    default-property-inclusion: non_null
 
 server:
   port: 8080

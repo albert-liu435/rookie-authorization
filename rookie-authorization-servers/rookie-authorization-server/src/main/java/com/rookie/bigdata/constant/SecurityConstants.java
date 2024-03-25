@@ -1,13 +1,26 @@
 package com.rookie.bigdata.constant;
 
 /**
- * @Class SecurityConstants
- * @Description security 常量类
- * @Author rookie
- * @Date 2024/3/22 14:28
- * @Version 1.0
+ * security 常量类
+ *
+ * @author vains
  */
 public class SecurityConstants {
+
+    /**
+     * 授权确认页面地址
+     */
+    public static final String DEVICE_ACTIVATED_URI = "http://127.0.0.1:5173/activated";
+
+    /**
+     * 授权确认页面地址
+     */
+    public static final String DEVICE_ACTIVATE_URI = "http://127.0.0.1:5173/activate";
+
+    /**
+     * 授权确认页面地址
+     */
+    public static final String CONSENT_PAGE_URI = "http://127.0.0.1:5173/consent";
 
     /**
      * 微信登录相关参数——openid：用户唯一id
