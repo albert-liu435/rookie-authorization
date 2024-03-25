@@ -31,18 +31,18 @@ const counterActive = ref(false)
  */
 const getCaptcha = () => {
   getImageCaptcha()
-      .then((result: any) => {
-        if (result.success) {
-          captchaCode = result.data.code
-          captchaImage.value = result.data.imageData
-          loginModel.value.captchaId = result.data.captchaId
-        } else {
-          message.warning(result.message)
-        }
-      })
-      .catch((e: any) => {
-        message.warning(`获取图形验证码失败：${e.message}`)
-      })
+    .then((result: any) => {
+      if (result.success) {
+        captchaCode = result.data.code
+        captchaImage.value = result.data.imageData
+        loginModel.value.captchaId = result.data.captchaId
+      } else {
+        message.warning(result.message)
+      }
+    })
+    .catch((e: any) => {
+      message.warning(`获取图形验证码失败：${e.message}`)
+    })
 }
 
 /**
@@ -53,23 +53,23 @@ const submitLogin = (type: string) => {
   loading.value = true
   loginModel.value.loginType = type
   loginSubmit(loginModel.value)
-      .then((result: any) => {
-        if (result.success) {
-          // message.info(`登录成功`)
-          let target = getQueryString('target')
-          if (target) {
-            window.location.href = target
-          }
-        } else {
-          message.warning(result.message)
+    .then((result: any) => {
+      if (result.success) {
+        // message.info(`登录成功`)
+        let target = getQueryString('target')
+        if (target) {
+          window.location.href = target
         }
-      })
-      .catch((e: any) => {
-        message.warning(`登录失败：${e.message}`)
-      })
-      .finally(() => {
-        loading.value = false
-      })
+      } else {
+        message.warning(result.message)
+      }
+    })
+    .catch((e: any) => {
+      message.warning(`登录失败：${e.message}`)
+    })
+    .finally(() => {
+      loading.value = false
+    })
 }
 
 /**
@@ -89,17 +89,17 @@ const getSmsCaptcha = () => {
     return
   }
   getSmsCaptchaByPhone({ phone: loginModel.value.username })
-      .then((result: any) => {
-        if (result.success) {
-          message.info(`获取短信验证码成功，固定为：${result.data}`)
-          counterActive.value = true
-        } else {
-          message.warning(result.message)
-        }
-      })
-      .catch((e: any) => {
-        message.warning(`获取短信验证码失败：${e.message}`)
-      })
+    .then((result: any) => {
+      if (result.success) {
+        message.info(`获取短信验证码成功，固定为：${result.data}`)
+        counterActive.value = true
+      } else {
+        message.warning(result.message)
+      }
+    })
+    .catch((e: any) => {
+      message.warning(`获取短信验证码失败：${e.message}`)
+    })
 }
 
 /**
@@ -146,10 +146,10 @@ getCaptcha()
   <main>
     <n-card title="">
       <n-tabs
-          default-value="signin"
-          size="large"
-          justify-content="space-evenly"
-          @update:value="handleUpdateValue"
+        default-value="signin"
+        size="large"
+        justify-content="space-evenly"
+        @update:value="handleUpdateValue"
       >
         <n-tab-pane name="signin" tab="账号登录">
           <n-form>
@@ -158,31 +158,31 @@ getCaptcha()
             </n-form-item-row>
             <n-form-item-row label="密码">
               <n-input
-                  v-model:value="loginModel.password"
-                  type="password"
-                  show-password-on="mousedown"
-                  placeholder="密码"
+                v-model:value="loginModel.password"
+                type="password"
+                show-password-on="mousedown"
+                placeholder="密码"
               />
             </n-form-item-row>
             <n-form-item-row label="验证码">
               <n-input-group>
                 <n-input v-model:value="loginModel.code" placeholder="请输入验证码" />
                 <n-image
-                    @click="getCaptcha"
-                    width="130"
-                    height="34"
-                    :src="captchaImage"
-                    preview-disabled
+                  @click="getCaptcha"
+                  width="130"
+                  height="34"
+                  :src="captchaImage"
+                  preview-disabled
                 />
               </n-input-group>
             </n-form-item-row>
           </n-form>
           <n-button
-              type="info"
-              :loading="loading"
-              @click="submitLogin('passwordLogin')"
-              block
-              strong
+            type="info"
+            :loading="loading"
+            @click="submitLogin('passwordLogin')"
+            block
+            strong
           >
             登录
           </n-button>
@@ -196,11 +196,11 @@ getCaptcha()
               <n-input-group>
                 <n-input v-model:value="loginModel.code" placeholder="请输入验证码" />
                 <n-image
-                    @click="getCaptcha"
-                    width="130"
-                    height="34"
-                    :src="captchaImage"
-                    preview-disabled
+                  @click="getCaptcha"
+                  width="130"
+                  height="34"
+                  :src="captchaImage"
+                  preview-disabled
                 />
               </n-input-group>
             </n-form-item-row>
@@ -208,19 +208,19 @@ getCaptcha()
               <n-input-group>
                 <n-input v-model:value="loginModel.password" placeholder="请输入验证码" />
                 <n-button
-                    type="info"
-                    @click="getSmsCaptcha"
-                    style="width: 130px"
-                    :disabled="counterActive"
+                  type="info"
+                  @click="getSmsCaptcha"
+                  style="width: 130px"
+                  :disabled="counterActive"
                 >
                   获取验证码
                   <span v-if="counterActive">
                     (
                     <n-countdown
-                        :render="renderCountdown"
-                        :on-finish="onFinish"
-                        :duration="59 * 1000"
-                        :active="counterActive"
+                      :render="renderCountdown"
+                      :on-finish="onFinish"
+                      :duration="59 * 1000"
+                      :active="counterActive"
                     />
                     )</span
                   >
