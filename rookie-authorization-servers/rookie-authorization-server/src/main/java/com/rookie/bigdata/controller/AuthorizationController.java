@@ -103,7 +103,7 @@ public class AuthorizationController {
         }
         // 根据当前sub去三方登录表去查
         LambdaQueryWrapper<Oauth2ThirdAccount> wrapper = Wrappers.lambdaQuery(Oauth2ThirdAccount.class)
-                .eq(Oauth2ThirdAccount::getThirdUsername, account)
+                .eq(Oauth2ThirdAccount::getUniqueId, account)
                 .eq(Oauth2ThirdAccount::getType, token.getClaim("loginType"));
         Oauth2ThirdAccount oauth2ThirdAccount = thirdAccountService.getOne(wrapper);
         if (oauth2ThirdAccount == null) {
@@ -117,6 +117,7 @@ public class AuthorizationController {
         // 复制基础用户信息
         BeanUtils.copyProperties(oauth2BasicUser, result);
         // 设置三方用户信息
+        result.setLocation(oauth2ThirdAccount.getLocation());
         result.setCredentials(oauth2ThirdAccount.getCredentials());
         result.setThirdUsername(oauth2ThirdAccount.getThirdUsername());
         result.setCredentialsExpiresAt(oauth2ThirdAccount.getCredentialsExpiresAt());
