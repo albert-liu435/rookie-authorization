@@ -1,5 +1,6 @@
 package com.rookie.bigdata.task;
 
+
 import com.rookie.bigdata.exchange.ProjectExchange;
 import com.rookie.bigdata.model.Result;
 import com.rookie.bigdata.model.response.CaptchaResult;
@@ -10,12 +11,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
+
 /**
- * @Author rookie
- * @Description TODO
- * @Date 2024/3/25 22:56
- * @Version 1.0
+ * 测试Http Interface，调用当前项目
+ *
+ * @author vains
  */
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
