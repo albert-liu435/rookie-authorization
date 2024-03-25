@@ -83,9 +83,16 @@ public class SmsCaptchaGrantAuthenticationProvider implements AuthenticationProv
                 .authorizationGrant(authenticationToken);
 
         // Initialize the OAuth2Authorization
+        // Initialize the OAuth2Authorization
         OAuth2Authorization.Builder authorizationBuilder = OAuth2Authorization.withRegisteredClient(registeredClient)
-                .principalName(clientPrincipal.getName())
+                // 存入授权scope
+                .authorizedScopes(authorizedScopes)
+                // 当前授权用户名称
+                .principalName(authenticate.getName())
+                // 设置当前用户认证信息
+                .attribute(Principal.class.getName(), authenticate)
                 .authorizationGrantType(authenticationToken.getAuthorizationGrantType());
+
 
         // ----- Access token -----
         OAuth2TokenContext tokenContext = tokenContextBuilder.tokenType(OAuth2TokenType.ACCESS_TOKEN).build();

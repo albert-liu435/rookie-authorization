@@ -6,17 +6,6 @@ import { type CountdownProps, createDiscreteApi } from 'naive-ui'
 
 const { message } = createDiscreteApi(['message'])
 
-/**
- * 获取uuid
- */
-const uuid = () => {
-  const temp_url = URL.createObjectURL(new Blob())
-  const uuid = temp_url.toString()
-  //释放这个url
-  URL.revokeObjectURL(temp_url)
-  return uuid.substring(uuid.lastIndexOf('/') + 1)
-}
-
 // 定义登录提交的对象
 const loginModel = ref({
   code: '',
@@ -40,7 +29,7 @@ const counterActive = ref(false)
 const getCaptcha = () => {
   axios({
     method: 'GET',
-    url: 'http://192.168.81.134:8080/getCaptcha'
+    url: 'http://192.168.1.102:8080/getCaptcha'
   }).then((r) => {
     let result = r.data
     if (result.success) {
@@ -60,7 +49,7 @@ const submitLogin = () => {
   loginModel.value.loginType = 'passwordLogin'
   axios({
     method: 'post',
-    url: 'http://192.168.81.134:8080/login',
+    url: 'http://192.168.1.102:8080/login',
     headers: {
       nonce: loginModel.value.nonce,
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -87,7 +76,7 @@ const submitSmsLogin = () => {
   loginModel.value.loginType = 'smsCaptcha'
   axios({
     method: 'post',
-    url: 'http://192.168.81.134:8080/login',
+    url: 'http://192.168.1.102:8080/login',
     headers: {
       nonce: loginModel.value.nonce,
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -125,7 +114,7 @@ const getSmsCaptcha = () => {
   }
   axios({
     method: 'get',
-    url: `http://192.168.81.134:8080/getSmsCaptcha?phone=${loginModel.value.username}`
+    url: `http://192.168.1.102:8080/getSmsCaptcha?phone=${loginModel.value.username}`
   }).then((r) => {
     let result = r.data
     if (result.success) {
@@ -189,10 +178,10 @@ getCaptcha()
   <main>
     <n-card title="">
       <n-tabs
-        default-value="signin"
-        size="large"
-        justify-content="space-evenly"
-        @update:value="handleUpdateValue"
+          default-value="signin"
+          size="large"
+          justify-content="space-evenly"
+          @update:value="handleUpdateValue"
       >
         <n-tab-pane name="signin" tab="账号登录">
           <n-form>
@@ -201,21 +190,21 @@ getCaptcha()
             </n-form-item-row>
             <n-form-item-row label="密码">
               <n-input
-                v-model:value="loginModel.password"
-                type="password"
-                show-password-on="mousedown"
-                placeholder="密码"
+                  v-model:value="loginModel.password"
+                  type="password"
+                  show-password-on="mousedown"
+                  placeholder="密码"
               />
             </n-form-item-row>
             <n-form-item-row label="验证码">
               <n-input-group>
                 <n-input v-model:value="loginModel.code" placeholder="请输入验证码" />
                 <n-image
-                  @click="getCaptcha"
-                  width="130"
-                  height="34"
-                  :src="captchaImage"
-                  preview-disabled
+                    @click="getCaptcha"
+                    width="130"
+                    height="34"
+                    :src="captchaImage"
+                    preview-disabled
                 />
               </n-input-group>
             </n-form-item-row>
@@ -231,11 +220,11 @@ getCaptcha()
               <n-input-group>
                 <n-input v-model:value="loginModel.code" placeholder="请输入验证码" />
                 <n-image
-                  @click="getCaptcha"
-                  width="130"
-                  height="34"
-                  :src="captchaImage"
-                  preview-disabled
+                    @click="getCaptcha"
+                    width="130"
+                    height="34"
+                    :src="captchaImage"
+                    preview-disabled
                 />
               </n-input-group>
             </n-form-item-row>
@@ -243,19 +232,19 @@ getCaptcha()
               <n-input-group>
                 <n-input v-model:value="loginModel.password" placeholder="请输入验证码" />
                 <n-button
-                  type="info"
-                  @click="getSmsCaptcha"
-                  style="width: 130px"
-                  :disabled="counterActive"
+                    type="info"
+                    @click="getSmsCaptcha"
+                    style="width: 130px"
+                    :disabled="counterActive"
                 >
                   获取验证码
                   <span v-if="counterActive">
                     (
                     <n-countdown
-                      :render="renderCountdown"
-                      :on-finish="onFinish"
-                      :duration="59 * 1000"
-                      :active="counterActive"
+                        :render="renderCountdown"
+                        :on-finish="onFinish"
+                        :duration="59 * 1000"
+                        :active="counterActive"
                     />
                     )</span
                   >
