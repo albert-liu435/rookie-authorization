@@ -28,6 +28,16 @@ https://blog.csdn.net/liuyanglglg/article/details/104708317
 
 SecurityContextConfigurer
 
+获取安全上下文，默认程序启动的时候会加载，由SecurityContextConfigurer进行配置
+
+默认采用的是DelegatingSecurityContextRepository委托类进行处理，里面存放RequestAttributeSecurityContextRepository和HttpSessionSecurityContextRepository。
+
+SecurityContextHolderStrategy 持有安全上下文的策略接口
+
+## AuthorizationServerContextFilter
+
+OAuth2AuthorizationServerConfigurer
+
 # springboot security启动
 
 在springboot启动的时候，首先会进行初始化 AuthenticationConfiguration中Bean。三个配置类
