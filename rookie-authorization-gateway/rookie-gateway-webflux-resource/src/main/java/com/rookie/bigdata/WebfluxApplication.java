@@ -5,8 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * 资源服务启动类
- *
- * @author vains
  */
 @SpringBootApplication
 public class WebfluxApplication {

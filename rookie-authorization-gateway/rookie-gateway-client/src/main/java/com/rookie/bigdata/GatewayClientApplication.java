@@ -5,8 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * 网关启动类
- *
- * @author vains
  */
 @SpringBootApplication
 public class GatewayClientApplication {
