@@ -8,7 +8,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@EnableScheduling
+/**
+ * 应用启动类
+ */
+//@EnableScheduling
 @SpringBootApplication
 public class RookieAuthorizationApplication {
 
