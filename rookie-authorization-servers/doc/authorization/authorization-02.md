@@ -1,6 +1,30 @@
+# spring security 过滤器链结构图
+
+![securityfilterchain](pic/authorization-02/multi-securityfilterchain.png)
 
 
-## springboot security启动
+
+WebSecurityConfiguration.springSecurityFilterChain()方法创建创建一个名称为springSecurityFilterChain的过滤器，过滤器对象为FilterChainProxy，里面封装了SecurityFilterChain对象，在进行http请求的时候，请求首先会到达DelegatingFilterProxy，然后通过获取targetBeanName名称的对象FilterChainProxy进行处理.
+DelegatingFilterProxy对象的创建是在SecurityFilterAutoConfiguration.securityFilterChainRegistration(SecurityProperties securityProperties)中进行的,这个filter会加入到tomcat中进行，最终调用
+
+# 过滤器
+
+## DisableEncodeUrlFilter
+
+这个过滤器有什么用？ 首先实现`Session`会话，可以通过以下两种方式
+
+- **Cookie**：浏览器设置，每次请求自动携带给服务端
+- **URL重写**：`Cookie`被禁用时，后端响应将`sessionId`拼接在`URL`后进行重写，传递给页面
+
+`DisableEncodeUrlFilter`禁用`HttpServletResponse`对`URL`进行编码重写，以防止将`sessionId`在`HTTP`访问日志等内容中泄露。
+
+## WebAsyncManagerIntegrationFilter
+
+https://zhuanlan.zhihu.com/p/655746004
+
+## SecurityContextHolderFilter
+
+# springboot security启动
 
 在springboot启动的时候，首先会进行初始化 AuthenticationConfiguration中Bean。三个配置类
 	
