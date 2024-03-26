@@ -22,7 +22,11 @@ DelegatingFilterProxy对象的创建是在SecurityFilterAutoConfiguration.securi
 
 https://zhuanlan.zhihu.com/p/655746004
 
+https://blog.csdn.net/liuyanglglg/article/details/104708317
+
 ## SecurityContextHolderFilter
+
+SecurityContextConfigurer
 
 # springboot security启动
 
