@@ -26,6 +26,9 @@ public final class DeviceClientAuthenticationConverter implements Authentication
     private final RequestMatcher deviceAuthorizationRequestMatcher;
     private final RequestMatcher deviceAccessTokenRequestMatcher;
 
+    /**
+     * @param deviceAuthorizationEndpointUri the OAuth 2.0 Device Authorization endpoint. The default is {@code /oauth2/device_authorization}
+     */
     public DeviceClientAuthenticationConverter(String deviceAuthorizationEndpointUri) {
         RequestMatcher clientIdParameterMatcher = request ->
                 request.getParameter(OAuth2ParameterNames.CLIENT_ID) != null;
@@ -42,6 +45,7 @@ public final class DeviceClientAuthenticationConverter implements Authentication
     @Nullable
     @Override
     public Authentication convert(HttpServletRequest request) {
+        //是否匹配该请求
         if (!this.deviceAuthorizationRequestMatcher.matches(request) &&
                 !this.deviceAccessTokenRequestMatcher.matches(request)) {
             return null;
