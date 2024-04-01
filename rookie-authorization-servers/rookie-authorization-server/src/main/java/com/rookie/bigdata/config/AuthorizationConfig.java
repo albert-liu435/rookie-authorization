@@ -7,9 +7,16 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.rookie.bigdata.authorization.DeviceClientAuthenticationConverter;
 import com.rookie.bigdata.authorization.DeviceClientAuthenticationProvider;
+import com.rookie.bigdata.authorization.web.CustomerAuthenticationEntryPoint;
+import com.rookie.bigdata.authorization.web.access.CustomerAccessDeniedHandler;
+import com.rookie.bigdata.util.JsonUtils;
+import com.rookie.bigdata.util.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.annotation.Secured;
@@ -44,6 +51,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
@@ -54,6 +62,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -75,6 +84,9 @@ import java.util.UUID;
 //@EnableWebSecurity()
 @EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 public class AuthorizationConfig {
+
+    protected final Logger logger = LoggerFactory.getLogger(AuthorizationConfig.class);
+
 
     private static final String CUSTOM_CONSENT_PAGE_URI = "/oauth2/consent";
 
@@ -165,7 +177,26 @@ public class AuthorizationConfig {
 
         // 添加BearerTokenAuthenticationFilter，将认证服务当做一个资源服务，解析请求头中的token
         http.oauth2ResourceServer((resourceServer) -> resourceServer
-                .jwt(Customizer.withDefaults()));
+                .jwt(Customizer.withDefaults())
+//                        //自定义类实现
+//                        .accessDeniedHandler(new CustomerAccessDeniedHandler())
+//                        .authenticationEntryPoint(new CustomerAuthenticationEntryPoint())
+//                //匿名类实现自定义处理
+//                        .accessDeniedHandler((request,response,accessDeniedException)->{
+//                            Map<String, String> parameters = SecurityUtils.getErrorParameter(request, response, accessDeniedException);
+//                            String wwwAuthenticate = SecurityUtils.computeWwwAuthenticateHeaderValue(parameters);
+//                            response.addHeader(HttpHeaders.WWW_AUTHENTICATE, wwwAuthenticate);
+//                            try {
+//                                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+//                                response.getWriter().write(JsonUtils.objectCovertToJson(parameters));
+//                                response.getWriter().flush();
+//                            } catch (IOException ex) {
+//                                logger.error("写回错误信息失败", accessDeniedException);
+//                            }})
+
+                .accessDeniedHandler(SecurityUtils::exceptionHandler)
+                .authenticationEntryPoint(SecurityUtils::exceptionHandler)
+        );
 
         return http.build();
     }
