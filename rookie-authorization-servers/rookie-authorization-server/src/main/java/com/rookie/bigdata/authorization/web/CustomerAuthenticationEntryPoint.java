@@ -25,6 +25,7 @@ import java.util.Map;
  */
 public class CustomerAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+
     protected final Logger logger = LoggerFactory.getLogger(CustomerAuthenticationEntryPoint.class);
 
     @Override
