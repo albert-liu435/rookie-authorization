@@ -85,6 +85,7 @@ import java.util.UUID;
 @EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 public class AuthorizationConfig {
 
+
     protected final Logger logger = LoggerFactory.getLogger(AuthorizationConfig.class);
 
 
