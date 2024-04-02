@@ -65,3 +65,12 @@ OAuth2TokenEndpointConfigurer.init(HttpSecurity httpSecurity) --> createDefaultA
 
 可以通过打断点，发现JwtEncoder和JwtDecoder两个对象在生成的时候用的JWKSource为同一个，所以可以通过这两个对象进行生成token和解密token。
 
+
+
+流程图
+
+![3473c605265744808fbb38a6cbaf7769~tplv-k3u1fbpfcp-jj-mark_3024_0_0_0_q75](pic/jwt/3473c605265744808fbb38a6cbaf7769tplv-k3u1fbpfcp-jj-mark_3024_0_0_0_q75.png)
+
+![11366b4bfaac4baf912d91932cfb001e~tplv-k3u1fbpfcp-jj-mark_3024_0_0_0_q75](pic/jwt/11366b4bfaac4baf912d91932cfb001etplv-k3u1fbpfcp-jj-mark_3024_0_0_0_q75.png)
+
+![4ee4b89d1536489a96d88cf9e503672f~tplv-k3u1fbpfcp-jj-mark_3024_0_0_0_q75](pic/jwt/4ee4b89d1536489a96d88cf9e503672ftplv-k3u1fbpfcp-jj-mark_3024_0_0_0_q75.png)
