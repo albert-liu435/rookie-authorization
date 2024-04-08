@@ -1,19 +1,27 @@
 package com.rookie.bigdata.controller;
 
 
+import cn.hutool.captcha.CaptchaUtil;
+import cn.hutool.captcha.ShearCaptcha;
+import jakarta.servlet.http.HttpSession;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.security.Principal;
 import java.util.Collections;
@@ -38,6 +46,32 @@ public class AuthorizationController {
     private final OAuth2AuthorizationConsentService authorizationConsentService;
 
 
+    @ResponseBody
+    @GetMapping("/getCaptcha")
+    public Map<String,Object> getCaptcha(HttpSession session) {
+        // 使用hutool-captcha生成图形验证码
+        // 定义图形验证码的长、宽、验证码字符数、干扰线宽度
+        ShearCaptcha captcha = CaptchaUtil.createShearCaptcha(150, 40, 4, 2);
+        // 这里应该返回一个统一响应类，暂时使用map代替
+        Map<String,Object> result = new HashMap<>();
+        result.put("code", HttpStatus.OK.value());
+        result.put("success", true);
+        result.put("message", "获取验证码成功.");
+        result.put("data", captcha.getImageBase64Data());
+        // 存入session中
+        session.setAttribute("captcha", captcha.getCode());
+        return result;
+    }
+
+    @ResponseBody
+    @GetMapping("/user")
+    public Map<String,Object> user(Principal principal) {
+        if (!(principal instanceof JwtAuthenticationToken token)) {
+            return Collections.emptyMap();
+        }
+        return token.getToken().getClaims();
+    }
+
     @GetMapping("/activate")
     public String activate(@RequestParam(value = "user_code", required = false) String userCode) {
         if (userCode != null) {
@@ -59,10 +93,13 @@ public class AuthorizationController {
 
 
     @GetMapping("/login")
-    public String login() {
+    public String login(Model model, HttpSession session) {
+        Object attribute = session.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+        if (attribute instanceof AuthenticationException exception) {
+            model.addAttribute("error", exception.getMessage());
+        }
         return "login";
     }
-
     @GetMapping(value = "/oauth2/consent")
     public String consent(Principal principal, Model model,
                           @RequestParam(OAuth2ParameterNames.CLIENT_ID) String clientId,

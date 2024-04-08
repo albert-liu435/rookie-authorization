@@ -9,6 +9,7 @@ import com.rookie.bigdata.authorization.DeviceClientAuthenticationConverter;
 import com.rookie.bigdata.authorization.DeviceClientAuthenticationProvider;
 import com.rookie.bigdata.authorization.web.CustomerAuthenticationEntryPoint;
 import com.rookie.bigdata.authorization.web.access.CustomerAccessDeniedHandler;
+import com.rookie.bigdata.filter.CaptchaAuthenticationFilter;
 import com.rookie.bigdata.util.JsonUtils;
 import com.rookie.bigdata.util.SecurityUtils;
 import org.slf4j.Logger;
@@ -55,6 +56,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.io.IOException;
@@ -169,7 +171,7 @@ public class AuthorizationConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
-                        .requestMatchers("/assets/**", "/webjars/**", "/login").permitAll()
+                        .requestMatchers("/assets/**", "/webjars/**", "/login","/getCaptcha").permitAll()
                         .anyRequest().authenticated()
                 )
                 // 指定登录页面,
@@ -179,6 +181,9 @@ public class AuthorizationConfig {
 
         // 指定登录页面,因为默认为/login，所以这里应该也可以写成
 //                .formLogin(Customizer.withDefaults());
+
+        // 在UsernamePasswordAuthenticationFilter拦截器之前添加验证码校验拦截器，并拦截POST的登录接口
+        http.addFilterBefore(new CaptchaAuthenticationFilter("/login"), UsernamePasswordAuthenticationFilter.class);
 
         // 添加BearerTokenAuthenticationFilter，将认证服务当做一个资源服务，解析请求头中的token
         http.oauth2ResourceServer((resourceServer) -> resourceServer
