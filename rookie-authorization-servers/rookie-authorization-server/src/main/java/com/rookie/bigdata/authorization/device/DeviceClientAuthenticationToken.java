@@ -1,4 +1,4 @@
-package com.rookie.bigdata.authorization;
+package com.rookie.bigdata.authorization.device;
 
 import java.util.Map;
 

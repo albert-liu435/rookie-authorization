@@ -5,19 +5,13 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import com.rookie.bigdata.authorization.DeviceClientAuthenticationConverter;
-import com.rookie.bigdata.authorization.DeviceClientAuthenticationProvider;
-import com.rookie.bigdata.authorization.web.CustomerAuthenticationEntryPoint;
-import com.rookie.bigdata.authorization.web.access.CustomerAccessDeniedHandler;
-import com.rookie.bigdata.filter.CaptchaAuthenticationFilter;
-import com.rookie.bigdata.util.JsonUtils;
+import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationConverter;
+import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationProvider;
 import com.rookie.bigdata.util.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.annotation.Secured;
@@ -50,16 +44,13 @@ import org.springframework.security.oauth2.server.authorization.settings.ClientS
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
-import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2DeviceCodeAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
-import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
@@ -67,7 +58,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -171,7 +161,7 @@ public class AuthorizationConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
-                        .requestMatchers("/assets/**", "/webjars/**", "/login","/getCaptcha").permitAll()
+                        .requestMatchers("/assets/**", "/webjars/**", "/login", "/getCaptcha", "/getSmsCaptcha").permitAll()
                         .anyRequest().authenticated()
                 )
                 // 指定登录页面,
@@ -187,7 +177,7 @@ public class AuthorizationConfig {
 
         // 添加BearerTokenAuthenticationFilter，将认证服务当做一个资源服务，解析请求头中的token
         http.oauth2ResourceServer((resourceServer) -> resourceServer
-                .jwt(Customizer.withDefaults())
+                        .jwt(Customizer.withDefaults())
 //                        //自定义类实现
 //                        .accessDeniedHandler(new CustomerAccessDeniedHandler())
 //                        .authenticationEntryPoint(new CustomerAuthenticationEntryPoint())
@@ -204,8 +194,8 @@ public class AuthorizationConfig {
 //                                logger.error("写回错误信息失败", accessDeniedException);
 //                            }})
 
-                .accessDeniedHandler(SecurityUtils::exceptionHandler)
-                .authenticationEntryPoint(SecurityUtils::exceptionHandler)
+                        .accessDeniedHandler(SecurityUtils::exceptionHandler)
+                        .authenticationEntryPoint(SecurityUtils::exceptionHandler)
         );
 
         return http.build();
@@ -451,7 +441,7 @@ public class AuthorizationConfig {
                     设置token签发地址(http(s)://{ip}:{port}/context-path, http(s)://domain.com/context-path)
                     如果需要通过ip访问这里就是ip，如果是有域名映射就填域名，通过什么方式访问该服务这里就填什么
                  */
-                .issuer("http://192.168.120.33:8080")
+                .issuer("http://192.168.1.9:8080")
 
                 .build();
     }
