@@ -1,4 +1,4 @@
-package com.rookie.bigdata.authorization;
+package com.rookie.bigdata.authorization.device;
 
 
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,6 @@ import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.web.OAuth2ClientAuthenticationFilter;
 
 /**
  * @Author rookie
