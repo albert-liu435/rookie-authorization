@@ -9,6 +9,11 @@ package com.rookie.bigdata.constant;
 public class SecurityConstants {
 
     /**
+     * 随机字符串请求头名字
+     */
+    public static final String NONCE_HEADER_NAME = "nonce";
+
+    /**
      * 登录方式入参名
      */
     public static final String LOGIN_TYPE_NAME = "loginType";
@@ -54,5 +59,3 @@ public class SecurityConstants {
     public static final String OAUTH_PARAMETER_NAME_SMS_CAPTCHA = "sms_captcha";
 
 }
-
-

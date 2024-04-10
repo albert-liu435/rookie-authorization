@@ -7,10 +7,15 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationConverter;
 import com.rookie.bigdata.authorization.device.DeviceClientAuthenticationProvider;
+import com.rookie.bigdata.authorization.handler.LoginFailureHandler;
+import com.rookie.bigdata.authorization.handler.LoginSuccessHandler;
+import com.rookie.bigdata.authorization.handler.LoginTargetAuthenticationEntryPoint;
 import com.rookie.bigdata.authorization.sms.SmsCaptchaGrantAuthenticationConverter;
 import com.rookie.bigdata.authorization.sms.SmsCaptchaGrantAuthenticationProvider;
 import com.rookie.bigdata.constant.SecurityConstants;
+import com.rookie.bigdata.support.RedisSecurityContextRepository;
 import com.rookie.bigdata.util.SecurityUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +30,8 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -53,11 +58,12 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -85,6 +91,7 @@ import java.util.stream.Collectors;
  */
 @Configuration
 @EnableWebSecurity(debug = true)
+@RequiredArgsConstructor
 //@EnableWebSecurity()
 @EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 public class AuthorizationConfig {
@@ -94,6 +101,9 @@ public class AuthorizationConfig {
 
 
     private static final String CUSTOM_CONSENT_PAGE_URI = "/oauth2/consent";
+
+    private final RedisSecurityContextRepository redisSecurityContextRepository;
+
 
     /**
      * 配置端点的过滤器链
@@ -116,6 +126,9 @@ public class AuthorizationConfig {
                         authorizationServerSettings.getDeviceAuthorizationEndpoint());
         DeviceClientAuthenticationProvider deviceClientAuthenticationProvider =
                 new DeviceClientAuthenticationProvider(registeredClientRepository);
+
+        // 使用redis存储、读取登录的认证信息
+        http.securityContext(context -> context.securityContextRepository(redisSecurityContextRepository));
 
 
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
@@ -147,7 +160,7 @@ public class AuthorizationConfig {
                 // 当未登录时访问认证端点时重定向至login页面
                 .exceptionHandling((exceptions) -> exceptions
                         .defaultAuthenticationEntryPointFor(
-                                new LoginUrlAuthenticationEntryPoint("/login"),
+                                new LoginTargetAuthenticationEntryPoint("http://127.0.0.1:5173"),
                                 new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
                         )
                 )
@@ -195,14 +208,24 @@ public class AuthorizationConfig {
      */
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+
+        // 添加跨域过滤器
+        http.addFilter(corsFilter());
+        // 禁用 csrf 与 cors
+        http.csrf(AbstractHttpConfigurer::disable);
+        http.cors(AbstractHttpConfigurer::disable);
+
         http.authorizeHttpRequests((authorize) -> authorize
                         // 放行静态资源
                         .requestMatchers("/assets/**", "/webjars/**", "/login", "/getCaptcha", "/getSmsCaptcha").permitAll()
                         .anyRequest().authenticated()
                 )
-                // 指定登录页面,
+                // 指定登录页面
                 .formLogin(formLogin ->
                         formLogin.loginPage("/login")
+                                // 登录成功和失败改为写回json，不重定向了
+                                .successHandler(new LoginSuccessHandler())
+                                .failureHandler(new LoginFailureHandler())
                 );
 
         // 指定登录页面,因为默认为/login，所以这里应该也可以写成
@@ -234,8 +257,54 @@ public class AuthorizationConfig {
                         .authenticationEntryPoint(SecurityUtils::exceptionHandler)
         );
 
+        http
+                // 当未登录时访问认证端点时重定向至login页面
+                .exceptionHandling((exceptions) -> exceptions
+                        .defaultAuthenticationEntryPointFor(
+                                new LoginTargetAuthenticationEntryPoint("http://127.0.0.1:5173"),
+                                new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
+                        )
+                );
+
+        // 使用redis存储、读取登录的认证信息
+        http.securityContext(context -> context.securityContextRepository(redisSecurityContextRepository));
+
+
         return http.build();
     }
+
+    /**
+     * 跨域过滤器配置
+     *
+     * @return CorsFilter
+     */
+    @Bean
+    public CorsFilter corsFilter() {
+
+        // 初始化cors配置对象
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // 设置允许跨域的域名,如果允许携带cookie的话,路径就不能写*号, *表示所有的域名都可以跨域访问
+        configuration.addAllowedOrigin("http://127.0.0.1:5173");
+        // 设置跨域访问可以携带cookie
+        configuration.setAllowCredentials(true);
+        // 允许所有的请求方法 ==> GET POST PUT Delete
+        configuration.addAllowedMethod("*");
+        // 允许携带任何头信息
+        configuration.addAllowedHeader("*");
+
+        // 初始化cors配置源对象
+        UrlBasedCorsConfigurationSource configurationSource = new UrlBasedCorsConfigurationSource();
+
+        // 给配置源对象设置过滤的参数
+        // 参数一: 过滤的路径 == > 所有的路径都要求校验是否跨域
+        // 参数二: 配置类
+        configurationSource.registerCorsConfiguration("/**", configuration);
+
+        // 返回配置好的过滤器
+        return new CorsFilter(configurationSource);
+    }
+
 
     /**
      * 自定义jwt，将权限信息放至jwt中
