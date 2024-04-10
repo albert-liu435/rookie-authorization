@@ -3,6 +3,8 @@ package com.rookie.bigdata.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.rookie.bigdata.model.security.CustomGrantedAuthority;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,8 +21,7 @@ import java.util.Collection;
  * @Date 2024/4/9 23:25
  * @Version 1.0
  */
-@Getter
-@Setter
+@Data
 @JsonSerialize
 @TableName("oauth2_basic_user")
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -92,10 +93,10 @@ public class Oauth2BasicUser implements UserDetails, Serializable {
      *  非数据库字段
      */
     @TableField(exist = false)
-    private Collection<? extends GrantedAuthority> authorities;
+    private Collection<CustomGrantedAuthority> authorities;
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public Collection<CustomGrantedAuthority> getAuthorities() {
         return this.authorities;
     }
 
@@ -124,4 +125,3 @@ public class Oauth2BasicUser implements UserDetails, Serializable {
         return !this.deleted;
     }
 }
-

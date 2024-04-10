@@ -11,6 +11,7 @@ import com.rookie.bigdata.mapper.Oauth2BasicUserMapper;
 import com.rookie.bigdata.mapper.SysAuthorityMapper;
 import com.rookie.bigdata.mapper.SysRoleAuthorityMapper;
 import com.rookie.bigdata.mapper.SysUserRoleMapper;
+import com.rookie.bigdata.model.security.CustomGrantedAuthority;
 import com.rookie.bigdata.service.IOauth2BasicUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -71,7 +72,7 @@ public class Oauth2BasicUserServiceImpl extends ServiceImpl<Oauth2BasicUserMappe
 
         // 根据菜单ID查出菜单
         List<SysAuthority> menus = sysAuthorityMapper.selectBatchIds(menusId);
-        Set<SimpleGrantedAuthority> authorities = Optional.ofNullable(menus).orElse(Collections.emptyList()).stream().map(SysAuthority::getUrl).map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
+        Set<CustomGrantedAuthority> authorities = Optional.ofNullable(menus).orElse(Collections.emptyList()).stream().map(SysAuthority::getUrl).map(CustomGrantedAuthority::new).collect(Collectors.toSet());
         basicUser.setAuthorities(authorities);
         return basicUser;
     }
