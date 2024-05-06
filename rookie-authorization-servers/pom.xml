@@ -18,8 +18,8 @@
 
 
     <modules>
-        <module>rookie-authorization-client</module>
-        <module>rookie-authorization-resource</module>
+<!--        <module>rookie-authorization-client</module>-->
+<!--        <module>rookie-authorization-resource</module>-->
         <module>rookie-authorization-server</module>
     </modules>
 
