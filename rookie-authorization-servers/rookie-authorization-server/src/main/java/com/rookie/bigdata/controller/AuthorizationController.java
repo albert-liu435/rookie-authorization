@@ -1,8 +1,8 @@
 package com.rookie.bigdata.controller;
 
+
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.bouncycastle.math.raw.Mod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsent;
@@ -16,15 +16,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
+ * @Class AuthorizationController
+ * @Description 认证服务器相关自定接口
  * @Author rookie
- * @Description 认证服务器相关自定义接口
- * @Date 2024/5/8 16:31
+ * @Date 2024/3/26 9:46
  * @Version 1.0
  */
-
 @Controller
 @RequiredArgsConstructor
 public class AuthorizationController {
@@ -40,7 +44,7 @@ public class AuthorizationController {
         return "login";
     }
 
-    @GetMapping("/oauth2/consent")
+    @GetMapping(value = "/oauth2/consent")
     public String consent(Principal principal, Model model,
                           @RequestParam(OAuth2ParameterNames.CLIENT_ID) String clientId,
                           @RequestParam(OAuth2ParameterNames.SCOPE) String scope,
@@ -53,28 +57,24 @@ public class AuthorizationController {
         if (registeredClient == null) {
             throw new RuntimeException("客户端不存在");
         }
-
-        OAuth2AuthorizationConsent currentAuthorizationConsent = this.authorizationConsentService.findById(registeredClient.getClientId(), principal.getName());
-
+        OAuth2AuthorizationConsent currentAuthorizationConsent =
+                this.authorizationConsentService.findById(registeredClient.getId(), principal.getName());
         Set<String> authorizedScopes;
         if (currentAuthorizationConsent != null) {
             authorizedScopes = currentAuthorizationConsent.getScopes();
         } else {
             authorizedScopes = Collections.emptySet();
         }
-
-        for(String requestedScope: StringUtils.delimitedListToStringArray(scope," ")){
-            if(OidcScopes.OPENID.equals(requestedScope)){
+        for (String requestedScope : StringUtils.delimitedListToStringArray(scope, " ")) {
+            if (OidcScopes.OPENID.equals(requestedScope)) {
                 continue;
             }
-            if(authorizedScopes.contains(requestedScope)){
+            if (authorizedScopes.contains(requestedScope)) {
                 previouslyApprovedScopes.add(requestedScope);
-            }else {
+            } else {
                 scopesToApprove.add(requestedScope);
             }
-
         }
-
 
         model.addAttribute("clientId", clientId);
         model.addAttribute("state", state);
@@ -104,6 +104,7 @@ public class AuthorizationController {
     public static class ScopeWithDescription {
         private static final String DEFAULT_DESCRIPTION = "UNKNOWN SCOPE - We cannot provide information about this permission, use caution when granting this.";
         private static final Map<String, String> scopeDescriptions = new HashMap<>();
+
         static {
             scopeDescriptions.put(
                     OidcScopes.PROFILE,

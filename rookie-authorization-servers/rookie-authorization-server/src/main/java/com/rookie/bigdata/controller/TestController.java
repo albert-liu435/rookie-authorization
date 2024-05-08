@@ -5,9 +5,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * @Class TestController
+ * @Description 测试接口
  * @Author rookie
- * @Description
- * @Date 2024/5/8 17:17
+ * @Date 2024/3/26 16:54
  * @Version 1.0
  */
 @RestController
