@@ -25,6 +25,7 @@ public class CustomerAccessDeniedHandler implements AccessDeniedHandler {
     protected final Logger logger = LoggerFactory.getLogger(CustomerAccessDeniedHandler.class);
 
 
+
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
         Map<String, String> parameters = SecurityUtils.getErrorParameter(request, response, accessDeniedException);
